@@ -45,7 +45,6 @@ public class RoleSelectExpansion extends PlaceholderExpansion {
             return String.valueOf(this.plugin.getGameManager().getRoleCount(team, Role.CANNON_OPERATOR));
         }
 
-
         if (params.equalsIgnoreCase("planes")) {
             return String.valueOf(this.plugin.getGameManager().getRoleCount(team, Role.PLANE_PILOT));
         }

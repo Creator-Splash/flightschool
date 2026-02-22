@@ -17,12 +17,11 @@ import java.util.*;
 
 public class ConfigManager {
 
-    private final FlightSchool plugin;
     private final FileManager fileManager;
 
-    public ConfigManager(FlightSchool plugin) {
-        this.plugin = plugin;
-        this.fileManager = new FileManager("config.yml", this.plugin);
+    public ConfigManager() {
+        FlightSchool plugin = FlightSchool.getInstance();
+        this.fileManager = new FileManager("config.yml", plugin);
 
         try {
             this.fileManager.createFile();

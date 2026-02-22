@@ -13,18 +13,15 @@ import java.util.UUID;
 
 public class BlimpHealthManager extends BukkitRunnable {
 
-    private final FlightSchool plugin;
+    private final String title;
+    private boolean paused;
+    private final List<ActiveMob> activeMobs;
+    private final BossBar bar;
 
-    private String title;
-    private boolean isPaused;
-    private List<ActiveMob> activeMobs;
-    private BossBar bar;
-
-    public BlimpHealthManager(FlightSchool plugin, List<ActiveMob> activeMobs, String title, List<UUID> playerList) {
-        this.plugin = plugin;
+    public BlimpHealthManager(List<ActiveMob> activeMobs, String title, List<UUID> playerList) {
         this.activeMobs = activeMobs;
         this.title = title;
-        this.isPaused = false;
+        this.paused = false;
 
         this.bar = Bukkit.createBossBar(title, BarColor.BLUE, BarStyle.SOLID);
         this.bar.setVisible(true);
@@ -39,22 +36,14 @@ public class BlimpHealthManager extends BukkitRunnable {
     }
 
     public void update() {
-        double netHealth = 0.0;
-        double maxHealth = 0.0;
-
-        for(ActiveMob activeMob : this.activeMobs) {
-            netHealth += activeMob.getEntity().getHealth();
-            maxHealth += activeMob.getEntity().getMaxHealth();
+        double percentage = getHealth();
+        if(Double.isNaN(percentage) || percentage == 0.0) {
+            bar.removeAll();
+            return;
         }
-        double percentage = netHealth / maxHealth * 100;
-        this.plugin.getLogger().info("Health: " + percentage);
 
         this.bar.setProgress(percentage / 100);
         this.bar.setTitle(this.title + " - " + String.format("%.2f", percentage) + "%");
-
-        if(percentage == 0.0) {
-            this.bar.removeAll();
-        }
     }
 
     public double getHealth() {
@@ -65,9 +54,8 @@ public class BlimpHealthManager extends BukkitRunnable {
             netHealth += activeMob.getEntity().getHealth();
             maxHealth += activeMob.getEntity().getMaxHealth();
         }
-        double percentage = netHealth / maxHealth * 100;
 
-        return percentage;
+        return netHealth / maxHealth * 100;
     }
 
     public void disable() {

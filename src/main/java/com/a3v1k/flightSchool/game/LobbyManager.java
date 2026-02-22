@@ -32,8 +32,8 @@ public class LobbyManager {
     private final FlightSchool plugin;
     private int countdown = 20;
 
-    public LobbyManager(FlightSchool plugin) {
-        this.plugin = plugin;
+    public LobbyManager() {
+        this.plugin = FlightSchool.getInstance();
     }
 
     public void startRoleSelection(List<Player> players) {
@@ -72,7 +72,7 @@ public class LobbyManager {
             player.sendMessage(message);
         }
 
-        BossbarManager bossbarManager = new BossbarManager(this.plugin, 20*20, "Voting ends in: ", players);
+        BossbarManager bossbarManager = new BossbarManager(20*20, "Voting ends in: ", players);
         bossbarManager.runTaskTimer(this.plugin, 0, 1);
 
         new BukkitRunnable() {
@@ -269,12 +269,12 @@ public class LobbyManager {
         BlockVector3 max = region.getMaximumPoint();
 
         // Calculate middle coordinates
-        double x = (min.getX() + max.getX()) / 2.0 + 0.5; // +0.5 to center on the block
-        double z = (min.getZ() + max.getZ()) / 2.0 + 0.5;
+        double x = (min.x() + max.x()) / 2.0 + 0.5; // +0.5 to center on the block
+        double z = (min.z() + max.z()) / 2.0 + 0.5;
 
         // For Y, we usually want the FLOOR of the region, not the floating center
         // If you want them to float in the middle, use (minY + maxY) / 2.0
-        double y = (min.getY() + max.getY()) / 2.0;
+        double y = (min.y() + max.y()) / 2.0;
 
         return new Location(world, x, y, z);
     }

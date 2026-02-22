@@ -1,6 +1,5 @@
 package com.a3v1k.flightSchool.game;
 
-import com.a3v1k.flightSchool.FlightSchool;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.boss.BarColor;
@@ -11,13 +10,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class WarningManager extends BukkitRunnable {
 
-    private final FlightSchool plugin;
     private int warningTime = 100;
-    private BossBar bar;
-    private String title;
+    private final BossBar bar;
+    private final String title;
 
-    public WarningManager(FlightSchool plugin, Player player) {
-        this.plugin = plugin;
+    public WarningManager(Player player) {
         this.title = "ʙʟɪᴍᴘ ᴜɴᴅᴇʀ ᴀᴛᴛᴀᴄᴋ";
         this.bar = Bukkit.createBossBar(title, BarColor.RED, BarStyle.SOLID);
         this.bar.setVisible(true);

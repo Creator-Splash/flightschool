@@ -19,12 +19,8 @@ public class TeamListener implements Listener {
 
     @EventHandler
     public void onMeetingListener(PlayerInteractEvent event) {
-        if (!(this.plugin.getGameManager().getGameState() == GameState.ROLE_SELECTION)) {
-            return;
-        }
-
+        if (!(this.plugin.getGameManager().getGameState() == GameState.ROLE_SELECTION)) return;
         if(event.getItem() == null || event.getItem().getType() == Material.AIR) return;
-
         if(event.getItem().getType() != Material.RECOVERY_COMPASS) return;
 
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "dm open selection_menu " + event.getPlayer().getName());

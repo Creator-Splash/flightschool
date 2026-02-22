@@ -1,4 +1,4 @@
-package com.a3v1k.flightSchool.killcam;
+package com.a3v1k.flightSchool.game;
 
 import com.a3v1k.flightSchool.FlightSchool;
 import me.jumper251.replay.api.ReplayAPI;
@@ -24,8 +24,8 @@ public class KillcamManager implements Listener {
 
     private static final int WINDOW_SECONDS = 10;
 
-    public KillcamManager(FlightSchool plugin) {
-        this.plugin = plugin;
+    public KillcamManager() {
+        this.plugin = FlightSchool.getInstance();
         Bukkit.getPluginManager().registerEvents(this, plugin);
     }
 

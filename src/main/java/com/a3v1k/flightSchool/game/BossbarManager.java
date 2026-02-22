@@ -1,6 +1,8 @@
 package com.a3v1k.flightSchool.game;
 
 import com.a3v1k.flightSchool.FlightSchool;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
@@ -13,30 +15,25 @@ import java.util.UUID;
 
 public class BossbarManager extends BukkitRunnable {
 
-    private final FlightSchool plugin;
-
-    private String title;
+    private final String title;
     private int currentTicks;
-    private int totalTicks;
-    private boolean isPaused;
-    private BossBar bar;
+    private final int totalTicks;
 
-    public BossbarManager(FlightSchool plugin, int totalTicks, String title, List<Player> playerList) {
-        this.plugin = plugin;
+    @Setter @Getter
+    private boolean paused;
+    private final BossBar bar;
+
+    public BossbarManager(int totalTicks, String title, List<Player> playerList) {
         this.currentTicks = totalTicks;
         this.totalTicks = totalTicks;
         this.title = title;
-        this.isPaused = false;
+        this.paused = false;
 
         this.bar = Bukkit.createBossBar(title, BarColor.BLUE, BarStyle.SOLID);
         this.bar.setVisible(true);
         for(Player player : playerList) {
             this.bar.addPlayer(player);
         }
-    }
-
-    public void setPaused(boolean pause) {
-        this.isPaused = pause;
     }
 
     @Override
@@ -47,7 +44,7 @@ public class BossbarManager extends BukkitRunnable {
             return;
         }
 
-        if(this.isPaused) {
+        if(this.isPaused()) {
             return;
         }
 

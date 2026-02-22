@@ -1,6 +1,7 @@
 package com.a3v1k.flightSchool.placeholders;
 
 import com.a3v1k.flightSchool.FlightSchool;
+import com.a3v1k.flightSchool.game.ScoreManager;
 import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.player.Role;
 import com.a3v1k.flightSchool.team.Team;
@@ -42,126 +43,83 @@ public class PointsExpansion extends PlaceholderExpansion {
         Team team = gamePlayer.getTeam();
         if (team == null) return "";
 
-        if (params.equalsIgnoreCase("timer")) {
-            if(this.plugin.getGameManager().getMainTimer() == null) {
-                return String.valueOf("NOT STARTED");
+        return switch (params.toLowerCase()){
+            case "timer" -> {
+                if(this.plugin.getGameManager().getMainTimer() == null) {
+                    yield "";
+                }
+
+                yield String.valueOf(this.plugin.getGameManager().getMainTimer().getTime());
             }
 
-            return String.valueOf(this.plugin.getGameManager().getMainTimer().getTime());
-        }
+            case "health_blimp" -> {
+                if(this.plugin.getGameManager().getHealthManager() == null) {
+                    yield  "";
+                }
 
+                if(this.plugin.getGameManager().getHealthManager().get(team.getName()) == null) {
+                    yield "";
+                }
 
-        if (params.equalsIgnoreCase("health_blimp")) {
-            if(this.plugin.getGameManager().getHealthManager() == null) {
-                return "NOT STARTED";
+                yield ChatColor.BLUE + String.valueOf(this.plugin.getGameManager().getHealthManager().get(team.getName()).getHealth()) + "%";
             }
 
-            if(this.plugin.getGameManager().getHealthManager().get(team.getName()) == null) {
-                return "NOT STARTED";
-            }
+            case "health_1" -> getPlaneHealth(team, 0);
+            case "health_2" -> getPlaneHealth(team, 1);
+            case "health_3" ->getPlaneHealth(team, 2);
 
-            return ChatColor.BLUE + String.valueOf(this.plugin.getGameManager().getHealthManager().get(team.getName()).getHealth()) + "%";
-        }
+            case "scores_value_1" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("red")));
 
-        if (params.equalsIgnoreCase("health_1")) {
-            if(this.plugin.getGameManager().getTeamPlanes() == null) {
-                return "NOT STARTED";
-            }
+            case "scores_value_2" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("yellow")));
 
-            if(this.plugin.getGameManager().getTeamPlanes().get(team).isEmpty()) {
-                return "NOT STARTED";
-            }
+            case "scores_value_3" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("green")));
 
-            if(this.plugin.getGameManager().getTeamPlanes().get(team).get(0) == null) {
-                return ChatColor.GOLD + "⚠ PLANE INACTIVE ⚠";
-            }
+            case "scores_value_4" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("blue")));
 
-            return ChatColor.GOLD + String.valueOf(this.plugin.getGameManager().getTeamPlanes().get(team).get(0).getEntity().getHealth() / this.plugin.getGameManager().getTeamPlanes().get(team).get(0).getEntity().getMaxHealth() * 100) + "%";
-        }
+            case "scores_value_5" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("dark_violet")));
 
-        if (params.equalsIgnoreCase("health_2")) {
-            if(this.plugin.getGameManager().getTeamPlanes() == null) {
-                return "NOT STARTED";
-            }
+            case "scores_value_6" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("violet")));
 
-            if(this.plugin.getGameManager().getTeamPlanes().get(team).isEmpty()) {
-                return "NOT STARTED";
-            }
+            case "scores_value_7" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("dark_blue")));
 
-            if(this.plugin.getGameManager().getTeamPlanes().get(team).get(1) == null) {
-                return ChatColor.GOLD + "⚠ PLANE INACTIVE ⚠";
-            }
+            case "scores_value_8" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("orange")));
 
-            return ChatColor.GOLD + String.valueOf(this.plugin.getGameManager().getTeamPlanes().get(team).get(1).getEntity().getHealth() / this.plugin.getGameManager().getTeamPlanes().get(team).get(1).getEntity().getMaxHealth() * 100) + "%";
-        }
+            case "scores_name_1" -> "Red";
 
-        if (params.equalsIgnoreCase("health_3")) {
-            if(this.plugin.getGameManager().getTeamPlanes() == null) {
-                return "NOT STARTED";
-            }
+            case "scores_name_2" -> "Yellow";
 
-            if(this.plugin.getGameManager().getTeamPlanes().get(team).isEmpty()) {
-                return "NOT STARTED";
-            }
+            case "scores_name_3" -> "Green";
 
-            if(this.plugin.getGameManager().getTeamPlanes().get(team).get(2) == null) {
-                return ChatColor.GOLD + "⚠ PLANE INACTIVE ⚠";
-            }
+            case "scores_name_4" -> "Blue";
 
-            return ChatColor.GOLD + String.valueOf(this.plugin.getGameManager().getTeamPlanes().get(team).get(2).getEntity().getHealth() / this.plugin.getGameManager().getTeamPlanes().get(team).get(2).getEntity().getMaxHealth() * 100) + "%";
+            case "scores_name_5" -> "Dark Violet";
+
+            case "scores_name_6" -> "Violet";
+
+            case "scores_name_7" -> "Dark Blue";
+
+            case "scores_name_8" -> "Orange";
+
+            default -> null;
+        };
+    }
+
+    private String getPlaneHealth(Team team, int planeIndex){
+        if(this.plugin.getGameManager().getTeamPlanes() == null) {
+            return "";
         }
 
-        if (params.equalsIgnoreCase("scores_value_1")) {
-            return String.valueOf(0);
-        }
-        if (params.equalsIgnoreCase("scores_value_2")) {
-            return String.valueOf(0);
-        }
-        if (params.equalsIgnoreCase("scores_value_3")) {
-            return String.valueOf(0);
-        }
-        if (params.equalsIgnoreCase("scores_value_4")) {
-            return String.valueOf(0);
-        }
-        if (params.equalsIgnoreCase("scores_value_5")) {
-            return String.valueOf(0);
-        }
-        if (params.equalsIgnoreCase("scores_value_6")) {
-            return String.valueOf(0);
-        }
-        if (params.equalsIgnoreCase("scores_value_7")) {
-            return String.valueOf(0);
-        }
-        if (params.equalsIgnoreCase("scores_value_8")) {
-            return String.valueOf(0);
+        if(this.plugin.getGameManager().getTeamPlanes().get(team).isEmpty()) {
+            return "";
         }
 
-        if (params.equalsIgnoreCase("scores_name_1")) {
-            return "Red";
-        }
-        if (params.equalsIgnoreCase("scores_name_2")) {
-            return "Yellow";
-        }
-        if (params.equalsIgnoreCase("scores_name_3")) {
-            return "Green";
-        }
-        if (params.equalsIgnoreCase("scores_name_4")) {
-            return "Blue";
-        }
-        if (params.equalsIgnoreCase("scores_name_5")) {
-            return "Dark Violet";
-        }
-        if (params.equalsIgnoreCase("scores_name_6")) {
-            return "Violet";
-        }
-        if (params.equalsIgnoreCase("scores_name_7")) {
-            return "Dark Blue";
-        }
-        if (params.equalsIgnoreCase("scores_name_8")) {
-            return "Orange";
+        if(this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex) == null) {
+            return ChatColor.RED + "⚠ PLANE INACTIVE ⚠";
         }
 
+        double planeHealth = this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex).getEntity().getHealth();
+        double maxHealth = this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex).getEntity().getMaxHealth();
 
-        return null;
+        return ChatColor.GOLD + String.valueOf(planeHealth / maxHealth * 100) + "%";
     }
 }

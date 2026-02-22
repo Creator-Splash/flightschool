@@ -3,6 +3,8 @@ package com.a3v1k.flightSchool.team;
 import com.a3v1k.flightSchool.FlightSchool;
 import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.player.Role;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
@@ -12,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Getter @Setter
 public class Team {
 
     private final String name;
@@ -36,29 +39,10 @@ public class Team {
         this.destroyedBlimps++;
     }
 
-    public int getDestroyedBlimps() {
-        return this.destroyedBlimps;
-    }
-
     public void decreaseCannonCount() {
         cannonCount--;
     }
 
-    public int getCannonCount() {
-        return cannonCount;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Color getColor() {
-        return color;
-    }
-
-    public String getSpawnRegionName() {
-        return spawnRegionName;
-    }
 
     public List<Player> getCannonMembers() {
         List<Player> players = new ArrayList<>();
@@ -86,10 +70,6 @@ public class Team {
         return players;
     }
 
-    public List<UUID> getMembers() {
-        return members;
-    }
-
     public void addMember(Player player) {
         members.add(player.getUniqueId());
     }
@@ -98,19 +78,4 @@ public class Team {
         members.remove(player.getUniqueId());
     }
 
-    public Location getBlimpSpawnLocation() {
-        return blimpSpawnLocation;
-    }
-
-    public void setBlimpSpawnLocation(Location blimpSpawnLocation) {
-        this.blimpSpawnLocation = blimpSpawnLocation;
-    }
-
-    public boolean isBlimpDestroyed() {
-        return blimpDestroyed;
-    }
-
-    public void setBlimpDestroyed(boolean blimpDestroyed) {
-        this.blimpDestroyed = blimpDestroyed;
-    }
 }

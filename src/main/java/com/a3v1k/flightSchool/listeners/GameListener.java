@@ -8,6 +8,8 @@ import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Firework;
@@ -16,7 +18,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.persistence.PersistentDataType;
@@ -40,36 +41,33 @@ public class GameListener implements Listener {
         Entity entity = event.getEntity();
         Entity damager = event.getDamager();
 
-        boolean isMythicMob_e = MythicBukkit.inst().getMobManager().isMythicMob(entity);
-        boolean isMythicMob_d = MythicBukkit.inst().getMobManager().isMythicMob(damager);
+        try(MythicBukkit inst = MythicBukkit.inst()){
+            boolean isVictimMythic = inst.getMobManager().isMythicMob(entity);
+            boolean isAttackerMythic = inst.getMobManager().isMythicMob(damager);
 
-        if(isMythicMob_e && isMythicMob_d) {
-            Optional<ActiveMob> optionalActiveMob = MythicBukkit.inst().getMobManager().getActiveMob(entity.getUniqueId());
-            Optional<ActiveMob> optionalActiveMob_d = MythicBukkit.inst().getMobManager().getActiveMob(damager.getUniqueId());
-            // Get entity name and check if its a turret
-            if(optionalActiveMob.isPresent() && optionalActiveMob.get().getFaction().contains("turret")
-                && optionalActiveMob_d.isPresent() && optionalActiveMob_d.get().getFaction().contains("plane")) {
-                ActiveMob activeMob = optionalActiveMob.get();
-                ActiveMob activeMob_d = optionalActiveMob_d.get();
+            if(!isVictimMythic || !isAttackerMythic) return;
 
-                // Get players who are flying the planes
-                String teamName = activeMob.getVariables().getString("beam").split("beam_")[1];
-                Team team = this.plugin.getGameManager().getTeam(teamName);
+            Optional<ActiveMob> victim = inst.getMobManager().getActiveMob(entity.getUniqueId());
+            Optional<ActiveMob> attacker = inst.getMobManager().getActiveMob(damager.getUniqueId());
+            if(victim.isEmpty() || attacker.isEmpty()) return;
+            if(!victim.get().getFaction().contains("turret") || !attacker.get().getFaction().contains("plane")) return;
 
-                String attackingTeamName = activeMob_d.getVariables().getString("beam").split("beam_")[1];
-                Team attackingTeam = this.plugin.getGameManager().getTeam(attackingTeamName);
 
-                // Get person who owns it
-                this.plugin.getLogger().info("[Detected Turret Damage] Team Turret: " + team.getName() + " || Team attacking: " + attackingTeamName);
+            // Get players who are flying the planes
+            String teamName = victim.get().getVariables().getString("beam").split("beam_")[1];
+            Team team = this.plugin.getGameManager().getTeam(teamName);
 
-                if(team != null) {
-                    for(Player player : team.getPlaneMembers()) {
-                        if(!warningManagerMap.containsKey(player)) {
-                            warningManagerMap.put(player, new WarningManager(this.plugin, player));
-                            warningManagerMap.get(player).runTaskTimer(this.plugin, 0, 1);
-                        }
-                    }
-                }
+            String attackingTeamName = attacker.get().getVariables().getString("beam").split("beam_")[1];
+            Team attackingTeam = this.plugin.getGameManager().getTeam(attackingTeamName);
+
+            // Get person who owns it
+            this.plugin.getLogger().info("[Detected Turret Damage] Team Turret: " + team.getName() + " || Team attacking: " + attackingTeamName);
+
+            for (Player player : team.getPlaneMembers()) {
+                if(warningManagerMap.containsKey(player)) continue;
+
+                warningManagerMap.put(player, new WarningManager(player));
+                warningManagerMap.get(player).runTaskTimer(this.plugin, 0, 1);
             }
         }
     }
@@ -79,31 +77,32 @@ public class GameListener implements Listener {
         Entity entity = event.getEntity();
         Entity damager = event.getDamageSource().getDirectEntity();
 
+        try(MythicBukkit inst = MythicBukkit.inst()){
+            boolean isVictimMythic = inst.getMobManager().isMythicMob(entity);
+            boolean isAttackerMythic = inst.getMobManager().isMythicMob(damager);
 
-        boolean isMythicMob_e = MythicBukkit.inst().getMobManager().isMythicMob(entity);
-        boolean isMythicMob_d = MythicBukkit.inst().getMobManager().isMythicMob(damager);
+            if(!isVictimMythic || !isAttackerMythic) return;
 
-        if(isMythicMob_e && isMythicMob_d) {
-            Optional<ActiveMob> activeMob_e = MythicBukkit.inst().getMobManager().getActiveMob(entity.getUniqueId());
-            Optional<ActiveMob> activeMob_d = MythicBukkit.inst().getMobManager().getActiveMob(damager.getUniqueId());
+            Optional<ActiveMob> victim = inst.getMobManager().getActiveMob(entity.getUniqueId());
+            Optional<ActiveMob> attacker = inst.getMobManager().getActiveMob(damager.getUniqueId());
 
-            if(!activeMob_e.isPresent() || !activeMob_d.isPresent()) return;
+            if(victim.isEmpty() || attacker.isEmpty()) return;
 
-            io.lumine.mythic.core.mobs.ActiveMob activeMobE = activeMob_e.get();
-            io.lumine.mythic.core.mobs.ActiveMob activeMobD = activeMob_d.get();
+            ActiveMob victimMob = victim.get();
+            ActiveMob attackerMob = attacker.get();
 
             // Get players who are flying the planes
-            String teamName = activeMobE.getVariables().getString("beam").split("beam_")[1];
+            String teamName = victimMob.getVariables().getString("beam").split("beam_")[1];
             Team team = this.plugin.getGameManager().getTeam(teamName);
 
-            String attackingTeamName = activeMobD.getVariables().getString("beam").split("beam_")[1];
+            String attackingTeamName = attackerMob.getVariables().getString("beam").split("beam_")[1];
             Team attackingTeam = this.plugin.getGameManager().getTeam(attackingTeamName);
 
             // Get entity name and check if its a plane
-            if(activeMobE.getFaction().contains("plane")) {
+            if(victimMob.getFaction().contains("plane")) {
                 NamespacedKey key = new NamespacedKey(plugin, "owner_uuid");
 
-                String uuidString = activeMobE.getEntity().getBukkitEntity().getPersistentDataContainer()
+                String uuidString = victimMob.getEntity().getBukkitEntity().getPersistentDataContainer()
                         .get(key, PersistentDataType.STRING);
                 UUID uuid = null;
                 if (uuidString != null) {
@@ -119,59 +118,54 @@ public class GameListener implements Listener {
                     Firework firework = entity.getWorld().spawn(entity.getLocation(), Firework.class);
                     FireworkMeta fireworkMeta = firework.getFireworkMeta();
                     fireworkMeta.addEffect(FireworkEffect.builder()
-                        .withColor(team.getColor())
-                        .with(FireworkEffect.Type.BALL)
-                        .build());
+                            .withColor(team.getColor())
+                            .with(FireworkEffect.Type.BALL)
+                            .build());
                     firework.setFireworkMeta(fireworkMeta);
                 }
                 this.plugin.getKillcamManager().playKillcam(player, teamName);
-//                this.plugin.getGameManager().spawnDelayedPlane(teamName, this.plugin.getConfigManager().getPlaneLocations().get(teamName).get(0), player, 15);
+                return;
             }
 
-            if(activeMobE.getFaction().contains("turret")) {
-                NamespacedKey key = new NamespacedKey(plugin, "owner_uuid");
+            if(!victimMob.getFaction().contains("turret")) return;
 
-                String uuidString = activeMobE.getEntity().getBukkitEntity().getPersistentDataContainer()
-                        .get(key, PersistentDataType.STRING);
-                UUID uuid = null;
-                if (uuidString != null) {
-                    uuid = UUID.fromString(uuidString);
-                }
-                if(uuid == null) return;
-                Player deadPlayer = Bukkit.getPlayer(uuid);
-                deadPlayer.setGameMode(GameMode.SPECTATOR);
-                deadPlayer.sendTitle(ChatColor.RED + "Cannon Destroyed!", "You are now a spectator.", 10, 70, 20);
+            NamespacedKey key = new NamespacedKey(plugin, "owner_uuid");
 
-                team.increaseDestroyedBlimps();
-                if(team.getDestroyedBlimps() == 1) { // TODO: Make it 2
-                    team.setBlimpDestroyed(true);
+            String uuidString = victimMob.getEntity().getBukkitEntity().getPersistentDataContainer().get(key, PersistentDataType.STRING);
+            if(uuidString == null) return;
 
-                    Component message =
-                            Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
-                                    .append(Component.newline())
-                                    .append(
-                                            Component.text("Your blimp is destroyed!", NamedTextColor.RED)
-                                    )
-                                    .append(Component.newline())
-                                    .append(Component.newline())
-                                    .append(
-                                            Component.text("Your planes now have one final stand!", NamedTextColor.GOLD)
-                                    )
-                                    .append(Component.newline())
-                                    .append(Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN));
+            UUID uuid = UUID.fromString(uuidString);
+            Player deadPlayer = Bukkit.getPlayer(uuid);
+            if(deadPlayer == null) return;
 
-                    this.plugin.getGameManager().explodeBlimp(this.plugin.getGameManager().getBlimp(teamName), team);
-                    for(UUID uuid1 : team.getMembers()) {
-                        Player player = Bukkit.getPlayer(uuid1);
-                        player.sendMessage(message);
-                    }
+            deadPlayer.setGameMode(GameMode.SPECTATOR);
+            deadPlayer.showTitle(Title.title(Component.text("Cannon Destroyed!").color(TextColor.color(255, 0, 0)), Component.text("You are now a spectator."), 10, 70, 20));
 
-                    for(Player player : team.getPlaneMembers()) {
-                        GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player);
-                        if (gamePlayer != null) {
-                            gamePlayer.setLastStand(true);
-                        }
-                    }
+            team.increaseDestroyedBlimps();
+            if(team.getDestroyedBlimps() != 1) return;
+
+            team.setBlimpDestroyed(true);
+
+            Component message = Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
+                    .append(Component.newline())
+                    .append(Component.text("Your blimp is destroyed!", NamedTextColor.RED))
+                    .append(Component.newline())
+                    .append(Component.newline())
+                    .append(Component.text("Your planes now have one final stand!", NamedTextColor.GOLD))
+                    .append(Component.newline())
+                    .append(Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN));
+
+            this.plugin.getGameManager().explodeBlimp(this.plugin.getGameManager().getBlimp(teamName), team);
+
+            for(UUID uuid1 : team.getMembers()) {
+                Player player = Bukkit.getPlayer(uuid1);
+                player.sendMessage(message);
+            }
+
+            for(Player player : team.getPlaneMembers()) {
+                GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player);
+                if (gamePlayer != null) {
+                    gamePlayer.setLastStand(true);
                 }
             }
         }
@@ -179,10 +173,9 @@ public class GameListener implements Listener {
 
     @EventHandler
     public void onPlayerAttackFromEntity(EntityDamageByEntityEvent event) {
-        if(event.getEntity() instanceof Player player) {
-            if(event.getDamager() instanceof LivingEntity livingEntity) {
-                event.setCancelled(true);
-            }
-        }
+        if(!(event.getEntity() instanceof Player)) return;
+        if(!(event.getDamager() instanceof LivingEntity)) return;
+
+        event.setCancelled(true);
     }
 }

@@ -14,8 +14,8 @@ public class ScoreManager {
     private final Map<UUID, Integer> playerScores = new HashMap<>();
     private final Map<Team, Integer> teamScores = new HashMap<>();
 
-    public ScoreManager(FlightSchool plugin) {
-        this.plugin = plugin;
+    public ScoreManager() {
+        this.plugin = FlightSchool.getInstance();
     }
 
     public void addScore(Player player, int score) {

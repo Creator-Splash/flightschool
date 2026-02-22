@@ -51,6 +51,8 @@ public class TempCommands implements CommandExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
+        if(!commandSender.hasPermission("flightSchool.admin")) return true;
+
         if (command.getName().equalsIgnoreCase("fsh-test")) {
             if (strings[0].equalsIgnoreCase("cannons")) {
                 Player player = (Player) commandSender;

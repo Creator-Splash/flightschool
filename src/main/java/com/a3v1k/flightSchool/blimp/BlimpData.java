@@ -1,5 +1,6 @@
 package com.a3v1k.flightSchool.blimp;
 
+import lombok.Getter;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
 
@@ -7,18 +8,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlimpData {
-    private final String teamName;
-    private final List<Location> solidBlocks;
 
-    // New
+    @Getter
+    private final String teamName;
+
     private final List<List<Location>> segments;
-    private final Vector axis;
 
     public BlimpData(String teamName, List<Location> solidBlocks) {
         this.teamName = teamName;
-        this.solidBlocks = solidBlocks;
 
-        // Compute principal axis (cheap heuristic)
+        // Compute principal axis
         Location min = solidBlocks.get(0).clone();
         Location max = solidBlocks.get(0).clone();
 
@@ -31,7 +30,7 @@ public class BlimpData {
             max.setZ(Math.max(max.getZ(), l.getZ()));
         }
 
-        axis = max.toVector().subtract(min.toVector()).normalize();
+        Vector axis = max.toVector().subtract(min.toVector()).normalize();
 
         // Split into 6 longitudinal segments
         segments = new ArrayList<>();

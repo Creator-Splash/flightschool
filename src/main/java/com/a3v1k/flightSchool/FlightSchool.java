@@ -4,7 +4,8 @@ import com.a3v1k.flightSchool.commands.FlightSchoolCommand;
 import com.a3v1k.flightSchool.commands.TempCommands;
 import com.a3v1k.flightSchool.game.GameManager;
 import com.a3v1k.flightSchool.game.LobbyManager;
-import com.a3v1k.flightSchool.killcam.KillcamManager;
+import com.a3v1k.flightSchool.game.KillcamManager;
+import com.a3v1k.flightSchool.game.ScoreManager;
 import com.a3v1k.flightSchool.listeners.GameListener;
 import com.a3v1k.flightSchool.listeners.PlayerListener;
 import com.a3v1k.flightSchool.listeners.TeamListener;
@@ -14,6 +15,7 @@ import com.a3v1k.flightSchool.team.Team;
 import com.a3v1k.flightSchool.team.TeamManager;
 import com.a3v1k.flightSchool.util.ConfigManager;
 import creatorsplash.creatorsplashcore.api.ProxyConnector;
+import lombok.Getter;
 import org.bukkit.Color;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,27 +23,26 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
+@Getter
 public final class FlightSchool extends JavaPlugin {
 
+    @Getter
     private static FlightSchool instance;
 
+    private ScoreManager scoreManager;
     private GameManager gameManager;
     private TeamManager teamManager;
     private LobbyManager lobbyManager;
     private ConfigManager configManager;
-    private com.a3v1k.flightSchool.killcam.KillcamManager killcamManager;
+    private KillcamManager killcamManager;
     private ProxyConnector proxyConnector;
 
     @Override
     public void onEnable() {
-        instance = this; // Set the static instance
-        this.getLogger().info("FlightSchool is enabling...");
-        this.proxyConnector = ProxyConnector.getInstance();
-        this.gameManager = new GameManager(this);
-        this.lobbyManager = new LobbyManager(this);
-        this.teamManager = new TeamManager(this);
-        this.configManager = new ConfigManager(this);
-        this.killcamManager = new KillcamManager(this);
+        instance = this;
+        getLogger().info("FlightSchool is enabling...");
+
+        initializeManagers();
 
         this.initializeTeams();
         this.getLogger().info("FlightSchool has been enabled.");
@@ -53,6 +54,16 @@ public final class FlightSchool extends JavaPlugin {
         new PointsExpansion(this).register();
     }
 
+    private void initializeManagers() {
+        proxyConnector = ProxyConnector.getInstance();
+        gameManager = new GameManager();
+        lobbyManager = new LobbyManager();
+        teamManager = new TeamManager();
+        configManager = new ConfigManager();
+        killcamManager = new KillcamManager();
+        scoreManager = new ScoreManager();
+    }
+
     private void initializeTeams() {
         this.gameManager.addTeam(new Team("red", Color.RED, "red_spawn"));
         this.gameManager.addTeam(new Team("yellow", Color.YELLOW, "yellow_spawn"));
@@ -62,6 +73,7 @@ public final class FlightSchool extends JavaPlugin {
         this.gameManager.addTeam(new Team("violet", Color.PURPLE, "violet_spawn"));
         this.gameManager.addTeam(new Team("dark_blue", Color.BLUE, "darkblue_spawn"));
         this.gameManager.addTeam(new Team("orange", Color.ORANGE, "orange_spawn"));
+
         this.getLogger().info("Teams initialized.");
     }
 
@@ -80,29 +92,6 @@ public final class FlightSchool extends JavaPlugin {
         instance = null;
     }
 
-    public static FlightSchool getInstance() {
-        return instance;
-    }
-
-    public GameManager getGameManager() {
-        return this.gameManager;
-    }
-    public TeamManager getTeamManager() {
-        return this.teamManager;
-    }
-
-    public ConfigManager getConfigManager() {
-        return this.configManager;
-    }
-
-    public ProxyConnector getProxyConnector() {
-        return this.proxyConnector;
-    }
-
-    public KillcamManager getKillcamManager() {
-        return this.killcamManager;
-    }
-
     public void enableCommands() {
         this.getCommand("fsh").setExecutor(new FlightSchoolCommand(this));
         this.getCommand("fsh-test").setExecutor(new TempCommands(this));
@@ -113,7 +102,6 @@ public final class FlightSchool extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new GameListener(this), this);
         this.getServer().getPluginManager().registerEvents(new TeamListener(this), this);
         this.getServer().getPluginManager().registerEvents(this.killcamManager, this);
-//        this.getServer().getPluginManager().registerEvents(new MythicListener(this), this);
     }
 
 }

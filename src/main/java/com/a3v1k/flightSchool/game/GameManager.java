@@ -26,8 +26,10 @@ import io.lumine.mythic.api.mobs.MythicMob;
 import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.entity.FallingBlock;
 import org.bukkit.entity.Player;
@@ -42,11 +44,15 @@ import java.util.*;
 public class GameManager {
 
     private final FlightSchool plugin;
+    @Getter
     private GameState gameState = GameState.LOBBY;
+    @Getter
     private final Map<UUID, GamePlayer> players = new HashMap<>();
+    @Getter
     private final Map<String, Team> teams = new HashMap<>();
     private final Map<Role, Integer> roleLimits = new HashMap<>();
-    private Map<Team, List<Player>> playerPlaneMaps = new HashMap<>();
+    private final Map<Team, List<Player>> playerPlaneMaps = new HashMap<>();
+    @Getter
     private final ScoreManager scoreManager;
     private Clipboard blimpClipboard;
     private final Map<String, BlimpData> blimps = new HashMap<>();
@@ -59,13 +65,14 @@ public class GameManager {
     };
     private Map<Team, List<ActiveMob>> teamPlaneMaps = new HashMap<>();
     private Map<String, BlimpHealthManager> healthManagers = new HashMap<>();
+    @Getter
     private BossbarManager mainTimer;
 
 
 
-    public GameManager(FlightSchool plugin) {
-        this.plugin = plugin;
-        this.scoreManager = new ScoreManager(plugin);
+    public GameManager() {
+        this.plugin = FlightSchool.getInstance();
+        this.scoreManager = new ScoreManager();
         roleLimits.put(Role.CANNON_OPERATOR, 2);
         roleLimits.put(Role.PLANE_PILOT, 3);
 
@@ -115,7 +122,7 @@ public class GameManager {
     }
 
     public void explodeBlimp(BlimpData blimp, Team team) {
-        World world = blimp.getSegment(0).get(0).getWorld();
+        World world = blimp.getSegment(0).getFirst().getWorld();
         Color color = team.getColor();
         Random random = new Random();
 
@@ -179,10 +186,12 @@ public class GameManager {
     private void spawnDebris(Location loc, int segment) {
         Material mat = DEBRIS[segment % DEBRIS.length];
 
-        FallingBlock block = loc.getWorld().spawnFallingBlock(
+        FallingBlock block = loc.getWorld().spawn(
                 loc.clone().add(0, 0.5, 0),
-                mat.createBlockData()
+                FallingBlock.class
         );
+
+        block.setBlockData(mat.createBlockData());
 
         org.bukkit.util.Vector v = new org.bukkit.util.Vector(
                 random(-0.5, 0.5),
@@ -194,21 +203,14 @@ public class GameManager {
         block.setDropItem(false);
         block.setHurtEntities(false);
 
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            block.remove();
-        }, 80L);
+        Bukkit.getScheduler().runTaskLater(plugin, block::remove, 80L);
     }
 
     private double random(double min, double max) {
         return min + Math.random() * (max - min);
     }
 
-    private List<Location> extractSolidBlocks(
-            Clipboard clipboard,
-            Transform transform,
-            BlockVector3 pastePos,
-            World world
-    ) {
+    private List<Location> extractSolidBlocks(Clipboard clipboard, Transform transform, BlockVector3 pastePos, World world) {
         List<Location> result = new ArrayList<>();
 
         for (BlockVector3 pt : clipboard.getRegion()) {
@@ -218,9 +220,9 @@ public class GameManager {
 
             Location loc = new Location(
                     world,
-                    pastePos.getX() + transformed.getX(),
-                    pastePos.getY() + transformed.getY(),
-                    pastePos.getZ() + transformed.getZ()
+                    pastePos.x() + transformed.x(),
+                    pastePos.y() + transformed.y(),
+                    pastePos.z() + transformed.z()
             );
 
             result.add(loc);
@@ -228,9 +230,6 @@ public class GameManager {
 
         return result;
     }
-
-
-
 
     public void loadBlimpSchematic() throws IOException {
         File schemFile = new File(plugin.getDataFolder(), "blimp.schem");
@@ -247,7 +246,7 @@ public class GameManager {
         Map<String, List<Location>> planeLocations = this.plugin.getConfigManager().getPlaneLocations();
         this.healthManagers = new HashMap<>();
         this.teamPlaneMaps = new HashMap<>();
-        World world = cannonLocations.values().stream().toList().get(0).get(0).getWorld();
+        World world = cannonLocations.values().stream().toList().getFirst().getFirst().getWorld();
 
         computeBlimpData(world, new Location(world, 0, 65, 0));
 
@@ -316,7 +315,7 @@ public class GameManager {
                     }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
                 }
             }
-            BlimpHealthManager blimpHealthManager = new BlimpHealthManager(this.plugin, activeMobs, "Blimp Health", team.getMembers());
+            BlimpHealthManager blimpHealthManager = new BlimpHealthManager(activeMobs, "Blimp Health", team.getMembers());
             blimpHealthManager.runTaskTimer(this.plugin, 0, 1);
             healthManagers.put(
                     team.getName(),
@@ -388,7 +387,7 @@ public class GameManager {
             this.teamPlaneMaps.put(team, activeMobs);
         }
 
-        this.mainTimer = new BossbarManager(this.plugin, 12*60*20, "ɢᴀᴍᴇ ᴇɴᴅѕ ɪɴ: ", playerList);
+        this.mainTimer = new BossbarManager(12*60*20, "ɢᴀᴍᴇ ᴇɴᴅѕ ɪɴ: ", playerList);
         this.mainTimer.runTaskTimer(this.plugin, 0, 1);
 
         new BukkitRunnable() {
@@ -406,10 +405,6 @@ public class GameManager {
                 }
             }
         }.runTaskTimer(this.plugin, 0, 1);
-    }
-
-    public BossbarManager getMainTimer() {
-        return this.mainTimer;
     }
 
     public Map<String, BlimpHealthManager> getHealthManager() {
@@ -434,10 +429,6 @@ public class GameManager {
         return this.playerPlaneMaps.get(team);
     }
 
-    public GameState getGameState() {
-        return gameState;
-    }
-
     public void setGameState(GameState gameState) {
         this.gameState = gameState;
         this.plugin.getLogger().info("Gamestate set to: " + gameState.toString());
@@ -460,20 +451,12 @@ public class GameManager {
         return players.get(player.getUniqueId());
     }
 
-    public Map<UUID, GamePlayer> getPlayers() {
-        return players;
-    }
-
     public void addTeam(Team team) {
         teams.put(team.getName(), team);
     }
 
     public Team getTeam(String name) {
         return teams.get(name);
-    }
-
-    public Map<String, Team> getTeams() {
-        return teams;
     }
 
     public int getRoleLimit(Role role) {
@@ -508,14 +491,9 @@ public class GameManager {
     }
 
     public long getRoleCount(Team team, Role role) {
-        long count = players.values().stream()
+        return players.values().stream()
                 .filter(p -> p.getTeam() == team && p.getRole() == role)
                 .count();
-        return count;
-    }
-
-    public ScoreManager getScoreManager() {
-        return scoreManager;
     }
 
     private void spawnPlane(String teamName, Location location, Player player) {
@@ -543,22 +521,21 @@ public class GameManager {
     public void spawnDelayedPlane(String teamName, Location location, Player player, int delay) {
         Team team = getTeam(teamName);
         GamePlayer gamePlayer = getGamePlayer(player);
-        if (team != null && team.isBlimpDestroyed() && !gamePlayer.getLastStand()) {
-            player.sendTitle("Your blimp is destroyed!", "You cannot respawn.", 10, 70, 20);
+        if (team != null && team.getBlimpDestroyed() && !gamePlayer.getLastStand()) {
+            player.showTitle(Title.title(Component.text("Your blimp is destroyed!"), Component.text("You cannot respawn."), 10, 70, 20));
             return;
         }
 
         new BukkitRunnable() {
-
             @Override
             public void run() {
-                if(team.isBlimpDestroyed() && gamePlayer.getLastStand()) {
+                if(team != null && team.getBlimpDestroyed() && gamePlayer.getLastStand()) {
                     gamePlayer.setLastStand(false);
                 }
 
                 spawnPlane(teamName, location, player);
             }
-        }.runTaskLater(this.plugin, delay*20);
+        }.runTaskLater(this.plugin, delay* 20L);
     }
 
     public boolean pasteMap(Location location, int teamCount) {
@@ -619,9 +596,7 @@ public class GameManager {
         BlockVector3 center = com.sk89q.worldedit.bukkit.BukkitAdapter.asBlockVector(location);
 
 
-        try (EditSession editSession = WorldEdit.getInstance().newEditSession(
-                com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(location.getWorld()))) {
-
+        try (EditSession editSession = WorldEdit.getInstance().newEditSession(com.sk89q.worldedit.bukkit.BukkitAdapter.adapt(location.getWorld()))) {
             for (int i = 0; i < teamCount; i++) {
 
                 String teamName = (String) allTeams[i][0];
@@ -631,9 +606,9 @@ public class GameManager {
                 double angleDeg = i * (360.0 / teamCount);
                 double angleRad = Math.toRadians(angleDeg);
 
-                int x = (int) (center.getX() + radius * Math.cos(angleRad));
-                int z = (int) (center.getZ() + radius * Math.sin(angleRad));
-                int y = center.getY();
+                int x = (int) (center.x() + radius * Math.cos(angleRad));
+                int z = (int) (center.z() + radius * Math.sin(angleRad));
+                int y = center.y();
 
                 BlockVector3 pastePos = BlockVector3.at(x, y, z);
 

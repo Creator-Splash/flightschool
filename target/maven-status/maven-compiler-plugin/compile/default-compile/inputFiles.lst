@@ -1,24 +1,24 @@
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/FlightSchool.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/blimp/BlimpData.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/blimp/FlightRunnable.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/commands/FlightSchoolCommand.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/commands/TempCommands.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/BlimpHealthManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/BossbarManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/GameManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/GameState.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/KillcamManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/LobbyManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/ScoreManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/game/WarningManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/listeners/GameListener.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/listeners/PlayerListener.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/listeners/TeamListener.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/placeholders/PointsExpansion.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/placeholders/RoleSelectExpansion.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/player/GamePlayer.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/player/Role.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/team/Team.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/team/TeamManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/util/ConfigManager.java
-/home/advik/Documents/Projects/MC/Minecraft - Commissions/CreatorSplash/FlightSchool/src/main/java/com/a3v1k/flightSchool/util/FileManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/FlightSchool.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/blimp/BlimpData.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/blimp/FlightRunnable.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/commands/FlightSchoolCommand.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/commands/TempCommands.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/BlimpHealthManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/BossbarManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/GameManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/GameState.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/KillcamManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/LobbyManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/ScoreManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/game/WarningManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/listeners/GameListener.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/listeners/PlayerListener.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/listeners/TeamListener.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/placeholders/PointsExpansion.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/placeholders/RoleSelectExpansion.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/player/GamePlayer.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/player/Role.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/team/Team.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/team/TeamManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/util/ConfigManager.java
+/Users/alice/IdeaProjects/flightschool/src/main/java/com/a3v1k/flightSchool/util/FileManager.java

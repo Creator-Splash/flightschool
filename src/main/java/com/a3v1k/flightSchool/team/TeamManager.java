@@ -25,8 +25,8 @@ public class TeamManager {
     private final FlightSchool plugin;
     private final LuckPerms luckPerms;
 
-    public TeamManager(FlightSchool plugin) {
-        this.plugin = plugin;
+    public TeamManager() {
+        this.plugin = FlightSchool.getInstance();
         this.luckPerms = LuckPermsProvider.get();
     }
 
@@ -77,7 +77,7 @@ public class TeamManager {
         }
 
         BlockVector3 center = region.getMaximumPoint().subtract(region.getMinimumPoint()).divide(2).add(region.getMinimumPoint());
-        Location spawnLocation = new Location(world, center.getX(), center.getY(), center.getZ());
+        Location spawnLocation = new Location(world, center.x(), center.y(), center.z());
         player.teleport(spawnLocation);
     }
 }
