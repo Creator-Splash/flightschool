@@ -24,7 +24,6 @@ com/a3v1k/flightSchool/listeners/PlayerListener.class
 com/a3v1k/flightSchool/blimp/BlimpData.class
 com/a3v1k/flightSchool/placeholders/RoleSelectExpansion.class
 com/a3v1k/flightSchool/placeholders/PointsExpansion.class
-com/a3v1k/flightSchool/game/GameManager$6.class
 com/a3v1k/flightSchool/game/GameManager$1.class
 com/a3v1k/flightSchool/FlightSchool.class
 com/a3v1k/flightSchool/game/ScoreManager.class

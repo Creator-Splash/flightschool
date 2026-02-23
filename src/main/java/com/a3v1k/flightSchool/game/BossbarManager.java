@@ -15,25 +15,14 @@ import java.util.UUID;
 
 public class BossbarManager extends BukkitRunnable {
 
-    private final String title;
     private int currentTicks;
-    private final int totalTicks;
 
     @Setter @Getter
     private boolean paused;
-    private final BossBar bar;
 
-    public BossbarManager(int totalTicks, String title, List<Player> playerList) {
+    public BossbarManager(int totalTicks) {
         this.currentTicks = totalTicks;
-        this.totalTicks = totalTicks;
-        this.title = title;
         this.paused = false;
-
-        this.bar = Bukkit.createBossBar(title, BarColor.BLUE, BarStyle.SOLID);
-        this.bar.setVisible(true);
-        for(Player player : playerList) {
-            this.bar.addPlayer(player);
-        }
     }
 
     @Override
@@ -57,9 +46,6 @@ public class BossbarManager extends BukkitRunnable {
         if(this.currentTicks == 0) {
             return;
         }
-
-        this.bar.setTitle(title + " - " + secondsToString(this.currentTicks / 20));
-        this.bar.setProgress((double) this.currentTicks / (double) this.totalTicks);
     }
 
     private String secondsToString(int pTime) {

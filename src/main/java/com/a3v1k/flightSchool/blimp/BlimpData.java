@@ -7,9 +7,9 @@ import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class BlimpData {
 
-    @Getter
     private final String teamName;
 
     private final List<List<Location>> segments;
@@ -18,8 +18,8 @@ public class BlimpData {
         this.teamName = teamName;
 
         // Compute principal axis
-        Location min = solidBlocks.get(0).clone();
-        Location max = solidBlocks.get(0).clone();
+        Location min = solidBlocks.getFirst().clone();
+        Location max = solidBlocks.getFirst().clone();
 
         for (Location l : solidBlocks) {
             min.setX(Math.min(min.getX(), l.getX()));
@@ -56,9 +56,6 @@ public class BlimpData {
         return segments.size();
     }
 
-    public String getTeamName() {
-        return teamName;
-    }
 }
 
 

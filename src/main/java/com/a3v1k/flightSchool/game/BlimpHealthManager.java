@@ -13,21 +13,10 @@ import java.util.UUID;
 
 public class BlimpHealthManager extends BukkitRunnable {
 
-    private final String title;
-    private boolean paused;
     private final List<ActiveMob> activeMobs;
-    private final BossBar bar;
 
-    public BlimpHealthManager(List<ActiveMob> activeMobs, String title, List<UUID> playerList) {
+    public BlimpHealthManager(List<ActiveMob> activeMobs) {
         this.activeMobs = activeMobs;
-        this.title = title;
-        this.paused = false;
-
-        this.bar = Bukkit.createBossBar(title, BarColor.BLUE, BarStyle.SOLID);
-        this.bar.setVisible(true);
-        for(UUID uuid : playerList) {
-            this.bar.addPlayer(Bukkit.getPlayer(uuid));
-        }
     }
 
     @Override
@@ -36,14 +25,7 @@ public class BlimpHealthManager extends BukkitRunnable {
     }
 
     public void update() {
-        double percentage = getHealth();
-        if(Double.isNaN(percentage) || percentage == 0.0) {
-            bar.removeAll();
-            return;
-        }
 
-        this.bar.setProgress(percentage / 100);
-        this.bar.setTitle(this.title + " - " + String.format("%.2f", percentage) + "%");
     }
 
     public double getHealth() {
@@ -55,11 +37,11 @@ public class BlimpHealthManager extends BukkitRunnable {
             maxHealth += activeMob.getEntity().getMaxHealth();
         }
 
-        return netHealth / maxHealth * 100;
+        double health = netHealth / maxHealth * 100;
+        return Double.isNaN(health) ? 0 : health;
     }
 
     public void disable() {
         this.cancel();
-        this.bar.removeAll();
     }
 }

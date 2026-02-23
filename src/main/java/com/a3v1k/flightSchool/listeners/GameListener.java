@@ -77,6 +77,8 @@ public class GameListener implements Listener {
         Entity entity = event.getEntity();
         Entity damager = event.getDamageSource().getDirectEntity();
 
+        if(damager == null) return;
+
         try(MythicBukkit inst = MythicBukkit.inst()){
             boolean isVictimMythic = inst.getMobManager().isMythicMob(entity);
             boolean isAttackerMythic = inst.getMobManager().isMythicMob(damager);
@@ -110,6 +112,8 @@ public class GameListener implements Listener {
                 }
                 if(uuid == null) return;
                 Player player = Bukkit.getPlayer(uuid);
+
+                if(player == null) return;
                 player.setGameMode(GameMode.SPECTATOR);
                 player.sendMessage(ChatColor.GOLD + "You will respawn in 15 seconds.");
 

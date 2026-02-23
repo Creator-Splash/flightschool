@@ -66,7 +66,7 @@ public class GameManager {
     private Map<Team, List<ActiveMob>> teamPlaneMaps = new HashMap<>();
     private Map<String, BlimpHealthManager> healthManagers = new HashMap<>();
     @Getter
-    private BossbarManager mainTimer;
+    private long gameStartedAt = -1;
 
 
 
@@ -241,6 +241,8 @@ public class GameManager {
     }
 
     public void startGame(List<Player> playerList) {
+        gameStartedAt = System.currentTimeMillis();
+
         setGameState(GameState.IN_GAME);
         Map<String, List<Location>> cannonLocations = this.plugin.getConfigManager().getCannonLocations(); // Team: Location mappings
         Map<String, List<Location>> planeLocations = this.plugin.getConfigManager().getPlaneLocations();
@@ -257,14 +259,10 @@ public class GameManager {
         Component message =
                 Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
                         .append(Component.newline())
-                        .append(
-                                Component.text("You are a cannon!", NamedTextColor.GREEN)
-                        )
+                        .append(Component.text("You are a cannon!", NamedTextColor.GREEN))
                         .append(Component.newline())
                         .append(Component.newline())
-                        .append(
-                                Component.text("Protect your blimp against other planes! Use [SPACE] to shoot!", NamedTextColor.GOLD)
-                        )
+                        .append(Component.text("Protect your blimp against other planes! Use [SPACE] to shoot!", NamedTextColor.GOLD))
                         .append(Component.newline())
                         .append(Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN));
 
@@ -272,6 +270,8 @@ public class GameManager {
         for(Map.Entry<String, List<Location>> cannonMap : cannonLocations.entrySet()) {
             Team team = this.plugin.getGameManager().getTeam(cannonMap.getKey());
             List<Player> players = team.getCannonMembers();
+
+            players.forEach(p -> p.getInventory().clear());
 
             // Spawn and then send players to sit.
             List<ActiveMob> activeMobs = new ArrayList<>();
@@ -315,25 +315,17 @@ public class GameManager {
                     }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
                 }
             }
-            BlimpHealthManager blimpHealthManager = new BlimpHealthManager(activeMobs, "Blimp Health", team.getMembers());
+            BlimpHealthManager blimpHealthManager = new BlimpHealthManager(activeMobs);
             blimpHealthManager.runTaskTimer(this.plugin, 0, 1);
-            healthManagers.put(
-                    team.getName(),
-                    blimpHealthManager
-            );
+            healthManagers.put(team.getName(), blimpHealthManager);
         }
 
-        Component message1 =
-                Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
+        Component message1 = Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
                         .append(Component.newline())
-                        .append(
-                                Component.text("You are a plane!", NamedTextColor.GREEN)
-                        )
+                        .append(Component.text("You are a plane!", NamedTextColor.GREEN))
                         .append(Component.newline())
                         .append(Component.newline())
-                        .append(
-                                Component.text("Shoot down other planes and protect your blimp! Use [SPACE] to shoot!", NamedTextColor.GOLD)
-                        )
+                        .append(Component.text("Shoot down other planes and protect your blimp! Use [SPACE] to shoot!", NamedTextColor.GOLD))
                         .append(Component.newline())
                         .append(Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN));
 
@@ -341,6 +333,8 @@ public class GameManager {
         for (Map.Entry<String, List<Location>> planeMap : planeLocations.entrySet()) {
             Team team = this.plugin.getGameManager().getTeam(planeMap.getKey());
             List<Player> players = team.getPlaneMembers();
+
+            players.forEach(p -> p.getInventory().clear());
 
             // Spawn and then send players to sit.
             List<ActiveMob> activeMobs = new ArrayList<>();
@@ -386,25 +380,6 @@ public class GameManager {
 
             this.teamPlaneMaps.put(team, activeMobs);
         }
-
-        this.mainTimer = new BossbarManager(12*60*20, "ɢᴀᴍᴇ ᴇɴᴅѕ ɪɴ: ", playerList);
-        this.mainTimer.runTaskTimer(this.plugin, 0, 1);
-
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                if(mainTimer.isCancelled() || getAliveBlimps() == 1) {
-                    this.cancel();
-
-                    // TODO: Replay or something idk
-
-                    for(Map.Entry<String, BlimpHealthManager> healthManagerEntry : healthManagers.entrySet()) {
-                        healthManagerEntry.getValue().disable();
-                    }
-                }
-            }
-        }.runTaskTimer(this.plugin, 0, 1);
     }
 
     public Map<String, BlimpHealthManager> getHealthManager() {

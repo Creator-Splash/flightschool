@@ -72,7 +72,7 @@ public class LobbyManager {
             player.sendMessage(message);
         }
 
-        BossbarManager bossbarManager = new BossbarManager(20*20, "Voting ends in: ", players);
+        BossbarManager bossbarManager = new BossbarManager(20 * 20);
         bossbarManager.runTaskTimer(this.plugin, 0, 1);
 
         new BukkitRunnable() {
@@ -222,7 +222,7 @@ public class LobbyManager {
         // See how many empty teams
         int emptyTeams = 0;
         for(Team team : gm.getTeams().values()) {
-            if(team.getMembers().size() == 0) {
+            if(team.getMembers().isEmpty()) {
                 emptyTeams++;
             }
         }

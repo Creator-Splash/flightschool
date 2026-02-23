@@ -10,6 +10,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class PointsExpansion extends PlaceholderExpansion {
 
     private final FlightSchool plugin;
@@ -45,11 +49,11 @@ public class PointsExpansion extends PlaceholderExpansion {
 
         return switch (params.toLowerCase()){
             case "timer" -> {
-                if(this.plugin.getGameManager().getMainTimer() == null) {
-                    yield "";
+                if(this.plugin.getGameManager().getGameStartedAt() == -1) {
+                    yield "Starting soon!";
                 }
 
-                yield String.valueOf(this.plugin.getGameManager().getMainTimer().getTime());
+                yield "Time: " + new SimpleDateFormat("mm:ss").format(new Date(System.currentTimeMillis() - this.plugin.getGameManager().getGameStartedAt()));
             }
 
             case "health_blimp" -> {
@@ -61,8 +65,10 @@ public class PointsExpansion extends PlaceholderExpansion {
                     yield "";
                 }
 
-                yield ChatColor.BLUE + String.valueOf(this.plugin.getGameManager().getHealthManager().get(team.getName()).getHealth()) + "%";
+                yield " | Blimp Health: " + this.plugin.getGameManager().getHealthManager().get(team.getName()).getHealth() + "%";
             }
+
+            case "score" -> String.valueOf(plugin.getScoreManager().getScore(team));
 
             case "health_1" -> getPlaneHealth(team, 0);
             case "health_2" -> getPlaneHealth(team, 1);
@@ -114,12 +120,12 @@ public class PointsExpansion extends PlaceholderExpansion {
         }
 
         if(this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex) == null) {
-            return ChatColor.RED + "⚠ PLANE INACTIVE ⚠";
+            return "⚠ PLANE INACTIVE ⚠";
         }
 
         double planeHealth = this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex).getEntity().getHealth();
         double maxHealth = this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex).getEntity().getMaxHealth();
 
-        return ChatColor.GOLD + String.valueOf(planeHealth / maxHealth * 100) + "%";
+        return String.valueOf(planeHealth / maxHealth * 100) + "%";
     }
 }

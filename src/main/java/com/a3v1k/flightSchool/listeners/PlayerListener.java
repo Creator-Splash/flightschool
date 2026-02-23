@@ -1,6 +1,7 @@
 package com.a3v1k.flightSchool.listeners;
 
 import com.a3v1k.flightSchool.FlightSchool;
+import com.a3v1k.flightSchool.game.GameState;
 import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.team.Team;
 import org.bukkit.GameMode;
@@ -22,6 +23,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        if(plugin.getGameManager().getGameState() == GameState.LOBBY){
+            event.getPlayer().getInventory().clear();
+        }
+
         plugin.getGameManager().addPlayer(event.getPlayer());
     }
 
