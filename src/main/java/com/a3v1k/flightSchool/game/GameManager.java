@@ -27,6 +27,7 @@ import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
@@ -65,7 +66,7 @@ public class GameManager {
     };
     private Map<Team, List<ActiveMob>> teamPlaneMaps = new HashMap<>();
     private Map<String, BlimpHealthManager> healthManagers = new HashMap<>();
-    @Getter
+    @Getter @Setter
     private long gameStartedAt = -1;
 
 
@@ -241,8 +242,6 @@ public class GameManager {
     }
 
     public void startGame(List<Player> playerList) {
-        gameStartedAt = System.currentTimeMillis();
-
         setGameState(GameState.IN_GAME);
         Map<String, List<Location>> cannonLocations = this.plugin.getConfigManager().getCannonLocations(); // Team: Location mappings
         Map<String, List<Location>> planeLocations = this.plugin.getConfigManager().getPlaneLocations();
@@ -254,10 +253,14 @@ public class GameManager {
 
         for(Player player : Bukkit.getOnlinePlayers()) {
             player.sendMessage(ChatColor.GOLD + "The game has started. Good luck!");
+            player.getInventory().clear();
         }
 
-        Component message =
-                Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
+        //set the worldborder
+        world.getWorldBorder().setCenter(world.getSpawnLocation());
+        world.getWorldBorder().setSize(2048);
+
+        Component message = Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
                         .append(Component.newline())
                         .append(Component.text("You are a cannon!", NamedTextColor.GREEN))
                         .append(Component.newline())
@@ -340,7 +343,7 @@ public class GameManager {
             List<ActiveMob> activeMobs = new ArrayList<>();
             int index = 0;
             for (Location location : planeMap.getValue()) {
-                MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("flightschool_plane_" + planeMap.getKey().toLowerCase()).orElse(null);
+                MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("plane_" + team.getName()).orElse(null);
 
                 if (mob != null) {
                     // spawns mob
@@ -373,6 +376,7 @@ public class GameManager {
 
                             // Now that the 'seat' bone exists, this signal will work
                             knight.signalMob(BukkitAdapter.adapt(player), "mountPlane");
+                            knight.getEntity().getBukkitEntity().addPassenger(player);
                         }
                     }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
                 }

@@ -17,6 +17,7 @@ import java.util.UUID;
 @Getter @Setter
 public class Team {
 
+    private final String displayName;
     private final String name;
     private final Color color;
     private final String spawnRegionName;
@@ -26,7 +27,8 @@ public class Team {
     private boolean blimpDestroyed = false;
     private int destroyedBlimps = 0;
 
-    public Team(String name, Color color, String spawnRegionName) {
+    public Team(String displayName, String name, Color color, String spawnRegionName) {
+        this.displayName = displayName;
         this.name = name;
         this.color = color;
         this.spawnRegionName = spawnRegionName;

@@ -16,6 +16,7 @@ import com.a3v1k.flightSchool.team.TeamManager;
 import com.a3v1k.flightSchool.util.ConfigManager;
 import creatorsplash.creatorsplashcore.api.ProxyConnector;
 import lombok.Getter;
+import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -65,14 +66,14 @@ public final class FlightSchool extends JavaPlugin {
     }
 
     private void initializeTeams() {
-        this.gameManager.addTeam(new Team("red", Color.RED, "red_spawn"));
-        this.gameManager.addTeam(new Team("yellow", Color.YELLOW, "yellow_spawn"));
-        this.gameManager.addTeam(new Team("green", Color.GREEN, "green_spawn"));
-        this.gameManager.addTeam(new Team("blue", Color.TEAL, "blue_spawn"));
-        this.gameManager.addTeam(new Team("dark_violet", Color.FUCHSIA, "darkviolet_spawn"));
-        this.gameManager.addTeam(new Team("violet", Color.PURPLE, "violet_spawn"));
-        this.gameManager.addTeam(new Team("dark_blue", Color.BLUE, "darkblue_spawn"));
-        this.gameManager.addTeam(new Team("orange", Color.ORANGE, "orange_spawn"));
+        this.gameManager.addTeam(new Team("a", "red", Color.RED, "red_spawn"));
+        this.gameManager.addTeam(new Team("b", "yellow", Color.YELLOW, "yellow_spawn"));
+        this.gameManager.addTeam(new Team("c", "green", Color.GREEN, "green_spawn"));
+        this.gameManager.addTeam(new Team("d", "blue", Color.TEAL, "blue_spawn"));
+        this.gameManager.addTeam(new Team("e", "dark_violet", Color.FUCHSIA, "darkviolet_spawn"));
+        this.gameManager.addTeam(new Team("f", "violet", Color.PURPLE, "violet_spawn"));
+        this.gameManager.addTeam(new Team("g", "dark_blue", Color.BLUE, "darkblue_spawn"));
+        this.gameManager.addTeam(new Team("h", "orange", Color.ORANGE, "orange_spawn"));
 
         this.getLogger().info("Teams initialized.");
     }
@@ -80,6 +81,11 @@ public final class FlightSchool extends JavaPlugin {
     public void startGame() {
         this.getLogger().info("FlightSchool game is starting!");
         this.lobbyManager.startCinematic(new ArrayList<>(this.getServer().getOnlinePlayers()));
+    }
+
+    public void stopGame(){
+        this.getLogger().info("FlightSchool game has stopped.");
+        Bukkit.restart();
     }
 
     public void endGame(Map<UUID, Integer> scores, String winner) {

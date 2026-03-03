@@ -5,7 +5,12 @@ import com.a3v1k.flightSchool.game.ScoreManager;
 import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.player.Role;
 import com.a3v1k.flightSchool.team.Team;
+import dev.lone.itemsadder.api.FontImages.FontImageWrapper;
+import dev.lone.itemsadder.api.ItemsAdder;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -39,6 +44,37 @@ public class PointsExpansion extends PlaceholderExpansion {
 
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
+        if(params.equalsIgnoreCase("timer")){
+            if(this.plugin.getGameManager().getGameStartedAt() == -1) {
+                return "Starting soon!";
+            }
+
+            long time = this.plugin.getGameManager().getGameStartedAt();
+            if(System.currentTimeMillis() - time > 1000 * 20) time -= 1000 * 20;
+
+            return "Time: " + new SimpleDateFormat("mm:ss").format(new Date(System.currentTimeMillis() - time));
+        }
+
+        if(params.startsWith("scores_name")){
+            return switch (params.toLowerCase()){
+                case "scores_name_1" -> "\uDAC0\uDC04 <red>Orca</red>";
+
+                case "scores_name_2" -> "\uDAC0\uDC05 <yellow>Seahorse</yellow>";
+
+                case "scores_name_3" -> "\uDAC0\uDC08 <green>Turtle</green>";
+
+                case "scores_name_4" -> "\uDAC0\uDC01 <aqua>Dolphin</aqua>";
+
+                case "scores_name_5" -> "\uDAC0\uDC06 <dark_purple>Stingray</dark_purple>";
+
+                case "scores_name_6" -> "\uDAC0\uDC02 <#f58eeb>Jellyfish</#f58eeb>";
+
+                case "scores_name_7" -> "\uDAC0\uDC07 <blue>Swordfish</blue>";
+
+                case "scores_name_8" -> "\uDAC0\uDC03 <gold>Octopus</gold>";
+                default -> "";
+            };
+        }
         if (player == null) return "";
 
         GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player);
@@ -48,14 +84,6 @@ public class PointsExpansion extends PlaceholderExpansion {
         if (team == null) return "";
 
         return switch (params.toLowerCase()){
-            case "timer" -> {
-                if(this.plugin.getGameManager().getGameStartedAt() == -1) {
-                    yield "Starting soon!";
-                }
-
-                yield "Time: " + new SimpleDateFormat("mm:ss").format(new Date(System.currentTimeMillis() - this.plugin.getGameManager().getGameStartedAt()));
-            }
-
             case "health_blimp" -> {
                 if(this.plugin.getGameManager().getHealthManager() == null) {
                     yield  "";
@@ -89,22 +117,6 @@ public class PointsExpansion extends PlaceholderExpansion {
             case "scores_value_7" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("dark_blue")));
 
             case "scores_value_8" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("orange")));
-
-            case "scores_name_1" -> "Red";
-
-            case "scores_name_2" -> "Yellow";
-
-            case "scores_name_3" -> "Green";
-
-            case "scores_name_4" -> "Blue";
-
-            case "scores_name_5" -> "Dark Violet";
-
-            case "scores_name_6" -> "Violet";
-
-            case "scores_name_7" -> "Dark Blue";
-
-            case "scores_name_8" -> "Orange";
 
             default -> null;
         };

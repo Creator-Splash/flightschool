@@ -98,6 +98,10 @@
       <name>AlessioDP Maven Repository</name>
       <url>https://repo.alessiodp.com/snapshots</url>
     </repository>
+    <repository>
+      <id>matteodev</id>
+      <url>https://maven.devs.beer/</url>
+    </repository>
   </repositories>
   <dependencies>
     <dependency>
@@ -158,6 +162,12 @@
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <version>1.18.42</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>dev.lone</groupId>
+      <artifactId>api-itemsadder</artifactId>
+      <version>4.0.10</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

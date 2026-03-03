@@ -75,6 +75,8 @@ public class LobbyManager {
         BossbarManager bossbarManager = new BossbarManager(20 * 20);
         bossbarManager.runTaskTimer(this.plugin, 0, 1);
 
+        FlightSchool.getInstance().getGameManager().setGameStartedAt(System.currentTimeMillis());
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -214,8 +216,9 @@ public class LobbyManager {
         for(int i = 0; i < allPlayers.size(); i++) {
             Team team = shuffledTeams.get(i % shuffledTeams.size());
             GamePlayer gamePlayer = gm.getGamePlayer(allPlayers.get(i));
+            if(gamePlayer.getTeam() != null) team = gamePlayer.getTeam();
             gamePlayer.setTeam(team);
-            team.addMember(allPlayers.get(i));
+            if(!team.getMembers().contains(allPlayers.get(i).getUniqueId())) team.addMember(allPlayers.get(i));
             this.plugin.getLogger().info("[Team Assignment] " + allPlayers.get(i).getName() + " has been assigned to " + team.getName());
         }
 

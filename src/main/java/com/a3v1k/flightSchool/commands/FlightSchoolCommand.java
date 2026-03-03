@@ -4,6 +4,7 @@ import com.a3v1k.flightSchool.FlightSchool;
 import com.a3v1k.flightSchool.game.GameState;
 import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.player.Role;
+import com.a3v1k.flightSchool.team.Team;
 import com.ticxo.modelengine.api.ModelEngineAPI;
 import com.ticxo.modelengine.api.animation.handler.AnimationHandler;
 import com.ticxo.modelengine.api.model.ActiveModel;
@@ -38,6 +39,16 @@ public class FlightSchoolCommand implements CommandExecutor {
                 sender.sendMessage("The Flight School game has started! Role selection is now active.");
             }
 
+            case "stop" -> {
+                if(plugin.getGameManager().getGameState() != GameState.IN_GAME){
+                    sender.sendMessage("The game has not started yet.");
+                    return true;
+                }
+
+                plugin.stopGame();
+                sender.sendMessage("The Flight School game has stopped.");
+            }
+
             case "set-cannon" -> {
                 if(!(sender instanceof Player player)) return true;
 
@@ -53,6 +64,37 @@ public class FlightSchoolCommand implements CommandExecutor {
                 this.plugin.getConfigManager().addPlaneLocation(args[1], location);
                 player.sendMessage("set successfully - plane for team " + args[1]);
             }
+
+            case "team" -> {
+                if(!(sender instanceof Player player)) return true;
+
+                if(args.length != 3) {
+                    player.sendMessage("Usage: /fsh team <player name> <team name>");
+                    return true;
+                }
+
+                Team team = plugin.getGameManager().getTeam(args[2]);
+                if(team == null){
+                    player.sendMessage("Team " + args[2] + " does not exist.");
+                    return true;
+                }
+
+                Player target = plugin.getServer().getPlayer(args[1]);
+                if(target == null) {
+                    player.sendMessage("Player " + args[1] + " does not exist.");
+                    return true;
+                }
+
+                GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(target);
+                if(gamePlayer == null) {
+                    player.sendMessage("Player " + args[1] + " does not exist.");
+                    return true;
+                }
+
+                gamePlayer.setTeam(team);
+                player.sendMessage("You've set " + args[1] +  " in the " + team.getName() + " team.");
+            }
+
             case "playing-as" -> {
                 if(!(sender instanceof Player player)) return true;
 
@@ -80,6 +122,7 @@ public class FlightSchoolCommand implements CommandExecutor {
                 player.sendMessage("You have been assigned as a " + roleToAssign.toString().replace('_', ' ') + ".");
                 plugin.getLogger().log(Level.INFO, "{0} has been assigned as a {1}", new Object[]{player.getName(), roleToAssign});
             }
+
             default -> {
                 sender.sendMessage("Invalid command");
             }
