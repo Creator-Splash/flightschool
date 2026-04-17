@@ -30,7 +30,7 @@ public class AirspaceManager extends BukkitRunnable {
 
     private static final long WARNING_COOLDOWN_MILLIS = 1_500L;
     private static final double BOUNDARY_WARNING_DISTANCE = 24.0D;
-    private static final float BOUNDARY_DISPLAY_SCALE = 1000.0F;
+    private static final float BOUNDARY_DISPLAY_SCALE = 800.0F;
     private static final float BOUNDARY_VIEW_RANGE = 64.0F;
     private static final int BOUNDARY_TEXT_SIZE = 10;
     private static final int MIN_BOUNDARY_ALPHA = 24;
@@ -142,11 +142,12 @@ public class AirspaceManager extends BukkitRunnable {
             return;
         }
 
-        double zOffset = BOUNDARY_DISPLAY_SCALE / 12;
+        double zOffset = BOUNDARY_DISPLAY_SCALE / 9;
 
         boolean ceiling = planeLocation.getY() > (double) (maxFlightY + minFlightY) / 2;
-        Location displayLocation = planeLocation.clone().add(0, ceiling ? 12 : -5, ceiling ? -zOffset : zOffset).setDirection(display.getLocation().getDirection());
-        displayLocation.setY(boundaryY);
+        Location displayLocation = planeLocation.clone()
+                .add(0, ceiling ? 5 : -2 /*needed because the text display can bug visually when you get close to it*/, ceiling ? -zOffset : zOffset)
+                .setDirection(display.getLocation().getDirection());
         display.teleport(displayLocation);
         display.setBackgroundColor(buildBoundaryBackground(distanceToBoundary));
 
@@ -230,7 +231,7 @@ public class AirspaceManager extends BukkitRunnable {
             return;
         }
 
-        player.sendActionBar(Component.text("You hit the airspace " + boundaryName + ".", NamedTextColor.RED));
+        player.sendActionBar(Component.text("You hit the airspace " + boundaryName, NamedTextColor.RED));
         lastWarningAt.put(player.getUniqueId(), now);
     }
 

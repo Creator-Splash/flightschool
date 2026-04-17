@@ -460,6 +460,10 @@ public class GameManager {
         if (team != null) {
             team.addMember(player);
         }
+
+        if (plugin.getTeamVisualManager() != null) {
+            plugin.getTeamVisualManager().syncPlayer(player);
+        }
     }
 
     public void assignRole(Player player, Role role) {
@@ -621,6 +625,10 @@ public class GameManager {
         freshRuntime.setGameState(GameState.LOBBY);
         freshRuntime.setGameStartedAt(-1L);
         runtime = freshRuntime;
+
+        if (plugin.getTeamVisualManager() != null) {
+            plugin.getTeamVisualManager().refreshAll();
+        }
     }
 
     private void despawnActiveMobs(List<ActiveMob> activeMobs) {

@@ -28,15 +28,20 @@ public class PlayerListener implements Listener {
         plugin.getGameManager().addPlayer(player);
 
         if(plugin.getGameManager().getGameState() != GameState.LOBBY) {
+            Bukkit.getScheduler().runTask(plugin, () -> plugin.getTeamVisualManager().refreshAll());
             return;
         }
 
-        Bukkit.getScheduler().runTask(plugin, () -> plugin.resetPlayerToLobby(player, false));
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            plugin.resetPlayerToLobby(player, false);
+            plugin.getTeamVisualManager().refreshAll();
+        });
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         plugin.getGameManager().removePlayer(event.getPlayer());
+        Bukkit.getScheduler().runTask(plugin, () -> plugin.getTeamVisualManager().refreshAll());
     }
 
     @EventHandler

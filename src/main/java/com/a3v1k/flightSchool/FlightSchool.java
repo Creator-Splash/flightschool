@@ -8,9 +8,9 @@ import com.a3v1k.flightSchool.listeners.PlayerListener;
 import com.a3v1k.flightSchool.listeners.TeamListener;
 import com.a3v1k.flightSchool.placeholders.PointsExpansion;
 import com.a3v1k.flightSchool.placeholders.RoleSelectExpansion;
-import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.team.Team;
 import com.a3v1k.flightSchool.team.TeamManager;
+import com.a3v1k.flightSchool.team.TeamVisualManager;
 import com.a3v1k.flightSchool.util.ConfigManager;
 import com.destroystokyo.paper.Title;
 import lombok.Getter;
@@ -31,6 +31,7 @@ public final class FlightSchool extends JavaPlugin {
 
     private GameManager gameManager;
     private TeamManager teamManager;
+    private TeamVisualManager teamVisualManager;
     private LobbyManager lobbyManager;
     private ConfigManager configManager;
     private KillcamManager killcamManager;
@@ -49,6 +50,8 @@ public final class FlightSchool extends JavaPlugin {
 
         new RoleSelectExpansion(this).register();
         new PointsExpansion(this).register();
+
+        this.teamVisualManager.refreshAll();
     }
 
     private void initializeManagers() {
@@ -61,6 +64,7 @@ public final class FlightSchool extends JavaPlugin {
         gameManager = new GameManager();
         lobbyManager = new LobbyManager();
         teamManager = new TeamManager();
+        teamVisualManager = new TeamVisualManager();
         configManager = new ConfigManager();
         killcamManager = new KillcamManager();
     }
