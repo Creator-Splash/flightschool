@@ -105,4 +105,60 @@ public class ConfigManager {
 
         return locationMap;
     }
+
+    public int getMinFlightY(World world, Map<String, List<Location>> planeLocations) {
+        YamlConfiguration config = this.fileManager.getConfig();
+        int fallbackFloorY = resolveDefaultPlaneFloorY(world, planeLocations);
+
+        if (!config.contains("airspace.min-flight-y")) {
+            config.set("airspace.min-flight-y", fallbackFloorY);
+
+            try {
+                this.fileManager.save(config);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return Math.max(world.getMinHeight() + 1, config.getInt("airspace.min-flight-y", fallbackFloorY));
+    }
+
+    public int getMaxFlightY(World world, Map<String, List<Location>> planeLocations) {
+        YamlConfiguration config = this.fileManager.getConfig();
+        int fallbackCeilingY = resolveDefaultPlaneCeilingY(world, planeLocations);
+
+        if (!config.contains("airspace.max-flight-y")) {
+            config.set("airspace.max-flight-y", fallbackCeilingY);
+
+            try {
+                this.fileManager.save(config);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return Math.min(world.getMaxHeight() - 1, config.getInt("airspace.max-flight-y", fallbackCeilingY));
+    }
+
+    private int resolveDefaultPlaneFloorY(World world, Map<String, List<Location>> planeLocations) {
+        int lowestPlaneSpawnY = planeLocations.values().stream()
+                .flatMap(List::stream)
+                .filter(Objects::nonNull)
+                .mapToInt(Location::getBlockY)
+                .min()
+                .orElse(world.getSpawnLocation().getBlockY());
+
+        return Math.max(world.getMinHeight() + 1, lowestPlaneSpawnY - 96);
+    }
+
+    private int resolveDefaultPlaneCeilingY(World world, Map<String, List<Location>> planeLocations) {
+        int highestPlaneSpawnY = planeLocations.values().stream()
+                .flatMap(List::stream)
+                .filter(Objects::nonNull)
+                .mapToInt(Location::getBlockY)
+                .max()
+                .orElse(world.getSpawnLocation().getBlockY());
+
+        return Math.min(world.getMaxHeight() - 1, highestPlaneSpawnY + 160);
+    }
 }

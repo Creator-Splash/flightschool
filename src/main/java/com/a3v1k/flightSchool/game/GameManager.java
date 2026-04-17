@@ -47,6 +47,7 @@ public class GameManager {
     public GameRuntime runtime;
     private final Map<Role, Integer> roleLimits = new HashMap<>();
     private Clipboard blimpClipboard;
+    private AirspaceManager airspaceManager;
     private static final Material[] DEBRIS = {
             Material.WHITE_WOOL,
             Material.STONE,
@@ -245,6 +246,18 @@ public class GameManager {
         //set the worldborder
         world.getWorldBorder().setCenter(world.getSpawnLocation());
         world.getWorldBorder().setSize(2048);
+        int minFlightY = this.plugin.getConfigManager().getMinFlightY(world, planeLocations);
+        int maxFlightY = this.plugin.getConfigManager().getMaxFlightY(world, planeLocations);
+        if (minFlightY >= maxFlightY) {
+            minFlightY = maxFlightY - 32;
+        }
+
+        if (airspaceManager != null) {
+            airspaceManager.shutdown();
+        }
+
+        airspaceManager = new AirspaceManager(this.plugin, this, minFlightY, maxFlightY);
+        airspaceManager.runTaskTimer(this.plugin, 0L, 1L);
 
         Component message = Component.text("════════════════════════════════", NamedTextColor.DARK_GREEN)
                         .append(Component.newline())
@@ -326,7 +339,7 @@ public class GameManager {
             players.forEach(p -> p.getInventory().clear());
 
             // Spawn and then send players to sit.
-            List<ActiveMob> activeMobs = new ArrayList<>();
+            this.runtime.getTeamPlaneMaps().put(team, new ArrayList<>());
             int index = 0;
             for (Location location : planeMap.getValue()) {
                 MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("plane_" + team.getName()).orElse(null);
@@ -342,7 +355,7 @@ public class GameManager {
                     }
 
                     Player player = players.get(index);
-                    activeMobs.add(knight);
+                    registerActivePlane(team, player, knight);
 //                    knight.setOwner(player.getUniqueId());
                     NamespacedKey key = new NamespacedKey(plugin, "owner_uuid");
 
@@ -367,8 +380,6 @@ public class GameManager {
                     }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
                 }
             }
-
-            this.runtime.getTeamPlaneMaps().put(team, activeMobs);
         }
     }
 
@@ -420,7 +431,7 @@ public class GameManager {
     }
 
     public int getRoleLimit(Role role) {
-        return roleLimits.getOrDefault(role, 0);
+        return roleLimits.getOrDefault(role, Integer.valueOf(0));
     }
 
     public boolean canAssignRole(Team team, Role role) {
@@ -455,8 +466,16 @@ public class GameManager {
         if (mob != null) {
             // spawns mob
             ActiveMob knight = mob.spawn(BukkitAdapter.adapt(location), 1);
+            Team team = getTeam(teamName);
+            if (team != null) {
+                registerActivePlane(team, player, knight);
+            }
 
             knight.getEntity().getBukkitEntity().setCustomName(player.getUniqueId().toString());
+            NamespacedKey key = new NamespacedKey(plugin, "owner_uuid");
+            knight.getEntity().getBukkitEntity()
+                    .getPersistentDataContainer()
+                    .set(key, PersistentDataType.STRING, player.getUniqueId().toString());
             player.teleport(location);
             player.setGameMode(GameMode.ADVENTURE);
 
@@ -470,6 +489,22 @@ public class GameManager {
                 }
             }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
         }
+    }
+
+    private void registerActivePlane(Team team, Player player, ActiveMob planeMob) {
+        List<ActiveMob> activePlanes = runtime.getTeamPlaneMaps().computeIfAbsent(team, key -> new ArrayList<>());
+        int planeIndex = team.getPlaneMembers().indexOf(player);
+
+        if (planeIndex < 0) {
+            activePlanes.add(planeMob);
+            return;
+        }
+
+        while (activePlanes.size() <= planeIndex) {
+            activePlanes.add(null);
+        }
+
+        activePlanes.set(planeIndex, planeMob);
     }
 
     public void spawnDelayedPlane(String teamName, Location location, Player player, int delay) {
@@ -530,6 +565,11 @@ public class GameManager {
     }
 
     public void resetRoundState() {
+        if (airspaceManager != null) {
+            airspaceManager.shutdown();
+            airspaceManager = null;
+        }
+
         Bukkit.getScheduler().cancelTasks(plugin);
         plugin.getKillcamManager().reset();
 
