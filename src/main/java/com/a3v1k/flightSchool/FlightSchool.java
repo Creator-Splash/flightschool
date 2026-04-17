@@ -2,22 +2,20 @@ package com.a3v1k.flightSchool;
 
 import com.a3v1k.flightSchool.commands.FlightSchoolCommand;
 import com.a3v1k.flightSchool.commands.TempCommands;
-import com.a3v1k.flightSchool.game.GameManager;
-import com.a3v1k.flightSchool.game.LobbyManager;
-import com.a3v1k.flightSchool.game.KillcamManager;
-import com.a3v1k.flightSchool.game.ScoreManager;
+import com.a3v1k.flightSchool.game.*;
 import com.a3v1k.flightSchool.listeners.GameListener;
 import com.a3v1k.flightSchool.listeners.PlayerListener;
 import com.a3v1k.flightSchool.listeners.TeamListener;
 import com.a3v1k.flightSchool.placeholders.PointsExpansion;
 import com.a3v1k.flightSchool.placeholders.RoleSelectExpansion;
+import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.team.Team;
 import com.a3v1k.flightSchool.team.TeamManager;
 import com.a3v1k.flightSchool.util.ConfigManager;
-import creatorsplash.creatorsplashcore.api.ProxyConnector;
+import com.destroystokyo.paper.Title;
 import lombok.Getter;
-import org.bukkit.Bukkit;
-import org.bukkit.Color;
+import org.bukkit.*;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -30,14 +28,11 @@ public final class FlightSchool extends JavaPlugin {
     @Getter
     private static FlightSchool instance;
 
-    private ScoreManager scoreManager;
     private GameManager gameManager;
     private TeamManager teamManager;
     private LobbyManager lobbyManager;
     private ConfigManager configManager;
     private KillcamManager killcamManager;
-    private ProxyConnector proxyConnector;
-
     @Override
     public void onEnable() {
         instance = this;
@@ -56,13 +51,17 @@ public final class FlightSchool extends JavaPlugin {
     }
 
     private void initializeManagers() {
-        proxyConnector = ProxyConnector.getInstance();
+        if (!getServer().getPluginManager().isPluginEnabled("CreatorSplashCore")) {
+            getLogger().severe("CreatorSplashCore must be enabled before FlightSchool can start.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         gameManager = new GameManager();
         lobbyManager = new LobbyManager();
         teamManager = new TeamManager();
         configManager = new ConfigManager();
         killcamManager = new KillcamManager();
-        scoreManager = new ScoreManager();
     }
 
     private void initializeTeams() {
@@ -83,9 +82,30 @@ public final class FlightSchool extends JavaPlugin {
         this.lobbyManager.startCinematic(new ArrayList<>(this.getServer().getOnlinePlayers()));
     }
 
-    public void stopGame(){
+    public void stopGame() {
         this.getLogger().info("FlightSchool game has stopped.");
-        Bukkit.restart();
+        World world = getConfigManager().getCannonLocations().values().stream()
+                .findFirst()
+                .map(locations -> locations.getFirst().getWorld())
+                .orElse(Bukkit.getWorlds().getFirst());
+        Location lobbyLocation = world.getSpawnLocation();
+        Title title = Title.builder()
+                .fadeIn(5)
+                .stay(40)
+                .fadeOut(20)
+                .title("Game Stopped")
+                .subtitle("Returning to lobby")
+                .build();
+
+        this.gameManager.resetRoundState();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.getInventory().clear();
+            player.removePotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS);
+            player.teleport(lobbyLocation);
+            player.setGameMode(GameMode.ADVENTURE);
+            player.sendTitle(title);
+        }
     }
 
     public void endGame(Map<UUID, Integer> scores, String winner) {
@@ -96,6 +116,7 @@ public final class FlightSchool extends JavaPlugin {
     public void onDisable() {
         this.getLogger().info("FlightSchool has been disabled.");
         instance = null;
+
     }
 
     public void enableCommands() {
@@ -108,6 +129,10 @@ public final class FlightSchool extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new GameListener(this), this);
         this.getServer().getPluginManager().registerEvents(new TeamListener(this), this);
         this.getServer().getPluginManager().registerEvents(this.killcamManager, this);
+    }
+
+    public ScoreManager getScoreManager() {
+        return this.gameManager.getScoreManager();
     }
 
 }

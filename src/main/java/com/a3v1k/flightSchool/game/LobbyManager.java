@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -50,6 +51,8 @@ public class LobbyManager {
 
         for(Player player : players) {
             player.getInventory().clear();
+            player.removePotionEffect(PotionEffectType.BLINDNESS);
+            player.setGameMode(GameMode.ADVENTURE);
 
             player.getInventory().setItem(4, itemStack);
         }
@@ -213,7 +216,7 @@ public class LobbyManager {
         GameManager gm = this.plugin.getGameManager();
         // Shuffle teams, assign first 5 to shuffled, then so on
         List<Team> shuffledTeams = List.copyOf(gm.getTeams().values());
-        for(int i = 0; i < allPlayers.size(); i++) {
+        for (int i = 0; i < allPlayers.size(); i++) {
             Team team = shuffledTeams.get(i % shuffledTeams.size());
             GamePlayer gamePlayer = gm.getGamePlayer(allPlayers.get(i));
             if(gamePlayer.getTeam() != null) team = gamePlayer.getTeam();

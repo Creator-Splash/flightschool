@@ -44,4 +44,16 @@ public class BlimpHealthManager extends BukkitRunnable {
     public void disable() {
         this.cancel();
     }
+
+    public void disableAndDespawn() {
+        disable();
+
+        for (ActiveMob activeMob : this.activeMobs) {
+            if (activeMob == null || activeMob.getEntity() == null) {
+                continue;
+            }
+
+            activeMob.despawn();
+        }
+    }
 }

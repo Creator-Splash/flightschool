@@ -47,11 +47,12 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
                 <configuration>
+                    <artifactSet>
+                        <excludes>
+                            <exclude>creatorsplash.creatorsplashcore:CreatorSplashCore</exclude>
+                        </excludes>
+                    </artifactSet>
                     <relocations>
                         <relocation>
                             <pattern>com.alessiodp.libby</pattern>

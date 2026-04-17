@@ -2,6 +2,8 @@ name: FlightSchool
 version: '0.01-alpha'
 main: com.a3v1k.flightSchool.FlightSchool
 api-version: '1.21'
+depend:
+  - CreatorSplashCore
 commands:
   fsh:
     description: Main command for the FlightSchool game

@@ -132,4 +132,20 @@ public class KillcamManager implements Listener {
             ReplayAPI.getInstance().stopReplay(replayName, false);
         }
     }
+
+    public void reset() {
+        for (UUID uuid : activeReplayNames.keySet().stream().toList()) {
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) {
+                stopRecording(player);
+            } else {
+                String replayName = activeReplayNames.remove(uuid);
+                if (replayName != null) {
+                    ReplayAPI.getInstance().stopReplay(replayName, false);
+                }
+            }
+        }
+
+        pendingRespawns.clear();
+    }
 }

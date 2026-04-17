@@ -40,8 +40,8 @@ public class FlightSchoolCommand implements CommandExecutor {
             }
 
             case "stop" -> {
-                if(plugin.getGameManager().getGameState() != GameState.IN_GAME){
-                    sender.sendMessage("The game has not started yet.");
+                if(plugin.getGameManager().getGameState() == GameState.LOBBY){
+                    sender.sendMessage("The game is already in the lobby state.");
                     return true;
                 }
 

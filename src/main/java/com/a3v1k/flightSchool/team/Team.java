@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Getter @Setter
 public class Team {
@@ -47,29 +48,13 @@ public class Team {
 
 
     public List<Player> getCannonMembers() {
-        List<Player> players = new ArrayList<>();
-        for(UUID uuid : this.getMembers()) {
-            Player player = Bukkit.getPlayer(uuid);
-            GamePlayer gamePlayer = FlightSchool.getInstance().getGameManager().getGamePlayer(player);
-            if(gamePlayer.getRole() == Role.CANNON_OPERATOR) {
-                players.add(player);
-            }
-        }
-
-        return players;
+        return getMembers().stream().map(Bukkit::getPlayer)
+                .filter(player -> player != null && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getRole() == Role.CANNON_OPERATOR).collect(Collectors.toList());
     }
 
     public List<Player> getPlaneMembers() {
-        List<Player> players = new ArrayList<>();
-        for(UUID uuid : this.getMembers()) {
-            Player player = Bukkit.getPlayer(uuid);
-            GamePlayer gamePlayer = FlightSchool.getInstance().getGameManager().getGamePlayer(player);
-            if(gamePlayer.getRole() == Role.PLANE_PILOT) {
-                players.add(player);
-            }
-        }
-
-        return players;
+        return getMembers().stream().map(Bukkit::getPlayer)
+                .filter(player -> player != null && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getRole() == Role.PLANE_PILOT).collect(Collectors.toList());
     }
 
     public void addMember(Player player) {
@@ -78,6 +63,14 @@ public class Team {
 
     public void removeMember(Player player) {
         members.remove(player.getUniqueId());
+    }
+
+    public void resetRoundState() {
+        members.clear();
+        blimpSpawnLocation = null;
+        cannonCount = 2;
+        blimpDestroyed = false;
+        destroyedBlimps = 0;
     }
 
 }
