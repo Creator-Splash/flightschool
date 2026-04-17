@@ -17,6 +17,7 @@ import lombok.Getter;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -84,11 +85,6 @@ public final class FlightSchool extends JavaPlugin {
 
     public void stopGame() {
         this.getLogger().info("FlightSchool game has stopped.");
-        World world = getConfigManager().getCannonLocations().values().stream()
-                .findFirst()
-                .map(locations -> locations.getFirst().getWorld())
-                .orElse(Bukkit.getWorlds().getFirst());
-        Location lobbyLocation = world.getSpawnLocation();
         Title title = Title.builder()
                 .fadeIn(5)
                 .stay(40)
@@ -100,10 +96,7 @@ public final class FlightSchool extends JavaPlugin {
         this.gameManager.resetRoundState();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            player.getInventory().clear();
-            player.removePotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS);
-            player.teleport(lobbyLocation);
-            player.setGameMode(GameMode.ADVENTURE);
+            resetPlayerToLobby(player, false);
             player.sendTitle(title);
         }
     }
@@ -114,9 +107,48 @@ public final class FlightSchool extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (this.gameManager != null) {
+            this.gameManager.resetRoundState();
+        }
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            resetPlayerToLobby(player, true);
+        }
+
         this.getLogger().info("FlightSchool has been disabled.");
         instance = null;
 
+    }
+
+    public Location getLobbySpawnLocation() {
+        if (this.configManager == null) {
+            return Bukkit.getWorlds().getFirst().getSpawnLocation();
+        }
+
+        World world = getConfigManager().getCannonLocations().values().stream()
+                .findFirst()
+                .filter(locations -> locations != null && !locations.isEmpty())
+                .map(locations -> locations.getFirst().getWorld())
+                .orElse(Bukkit.getWorlds().getFirst());
+        return world.getSpawnLocation();
+    }
+
+    public void resetPlayerToLobby(Player player, boolean persistLocation) {
+        if (player == null || !player.isOnline()) {
+            return;
+        }
+
+        player.getInventory().clear();
+        player.removePotionEffect(PotionEffectType.BLINDNESS);
+        player.setFireTicks(0);
+        player.setFallDistance(0.0F);
+        player.teleport(getLobbySpawnLocation());
+        player.setVelocity(new org.bukkit.util.Vector());
+        player.setGameMode(GameMode.ADVENTURE);
+
+        if (persistLocation) {
+            player.saveData();
+        }
     }
 
     public void enableCommands() {

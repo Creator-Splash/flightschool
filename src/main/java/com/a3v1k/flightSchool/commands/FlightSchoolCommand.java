@@ -91,7 +91,7 @@ public class FlightSchoolCommand implements CommandExecutor {
                     return true;
                 }
 
-                gamePlayer.setTeam(team);
+                plugin.getGameManager().assignPlayerToTeam(target, team);
                 player.sendMessage("You've set " + args[1] +  " in the " + team.getName() + " team.");
             }
 

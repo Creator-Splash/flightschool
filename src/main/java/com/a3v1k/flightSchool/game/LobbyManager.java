@@ -220,8 +220,7 @@ public class LobbyManager {
             Team team = shuffledTeams.get(i % shuffledTeams.size());
             GamePlayer gamePlayer = gm.getGamePlayer(allPlayers.get(i));
             if(gamePlayer.getTeam() != null) team = gamePlayer.getTeam();
-            gamePlayer.setTeam(team);
-            if(!team.getMembers().contains(allPlayers.get(i).getUniqueId())) team.addMember(allPlayers.get(i));
+            gm.assignPlayerToTeam(allPlayers.get(i), team);
             this.plugin.getLogger().info("[Team Assignment] " + allPlayers.get(i).getName() + " has been assigned to " + team.getName());
         }
 

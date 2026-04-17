@@ -4,6 +4,7 @@ import com.a3v1k.flightSchool.FlightSchool;
 import com.a3v1k.flightSchool.game.GameState;
 import com.a3v1k.flightSchool.player.GamePlayer;
 import com.a3v1k.flightSchool.team.Team;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,11 +24,14 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        if(plugin.getGameManager().getGameState() == GameState.LOBBY){
-            event.getPlayer().getInventory().clear();
+        Player player = event.getPlayer();
+        plugin.getGameManager().addPlayer(player);
+
+        if(plugin.getGameManager().getGameState() != GameState.LOBBY) {
+            return;
         }
 
-        plugin.getGameManager().addPlayer(event.getPlayer());
+        Bukkit.getScheduler().runTask(plugin, () -> plugin.resetPlayerToLobby(player, false));
     }
 
     @EventHandler

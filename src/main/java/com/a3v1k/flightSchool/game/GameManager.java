@@ -441,6 +441,27 @@ public class GameManager {
         return count < getRoleLimit(role);
     }
 
+    public void assignPlayerToTeam(Player player, Team team) {
+        if (player == null) {
+            return;
+        }
+
+        for (Team existingTeam : runtime.getTeams().values()) {
+            existingTeam.removeMember(player);
+        }
+
+        GamePlayer gamePlayer = getGamePlayer(player);
+        if (gamePlayer == null) {
+            return;
+        }
+
+        gamePlayer.setTeam(team);
+
+        if (team != null) {
+            team.addMember(player);
+        }
+    }
+
     public void assignRole(Player player, Role role) {
         this.runtime.assignRole(player, role);
     }

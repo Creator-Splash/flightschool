@@ -2,7 +2,6 @@ package com.a3v1k.flightSchool.team;
 
 import com.a3v1k.flightSchool.FlightSchool;
 import com.a3v1k.flightSchool.game.GameManager;
-import com.a3v1k.flightSchool.player.GamePlayer;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
@@ -49,9 +48,7 @@ public class TeamManager {
         int teamIndex = 0;
         for (Player player : playersToAssign) {
             Team team = teams.get(teamIndex);
-            GamePlayer gamePlayer = gameManager.getGamePlayer(player);
-            gamePlayer.setTeam(team);
-            team.addMember(player);
+            gameManager.assignPlayerToTeam(player, team);
             teleportPlayerToSpawn(player, team);
             teamIndex = (teamIndex + 1) % teams.size();
         }
