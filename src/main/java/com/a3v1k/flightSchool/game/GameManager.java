@@ -375,7 +375,6 @@ public class GameManager {
 
                             // Now that the 'seat' bone exists, this signal will work
                             knight.signalMob(BukkitAdapter.adapt(player), "mountPlane");
-                            knight.getEntity().getBukkitEntity().addPassenger(player);
                         }
                     }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
                 }

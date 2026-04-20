@@ -127,7 +127,7 @@ public class AirspaceManager extends BukkitRunnable {
 
     private void updateBoundaryDisplays(Player player, Entity plane) {
         BoundaryDisplays displays = getOrCreateDisplays(player, plane.getWorld());
-        Location planeLocation = plane.getLocation().setRotation(0, 90);
+        Location planeLocation = plane.getLocation().clone();
 
         double distanceToTop = maxFlightY - planeLocation.getY();
         double distanceToBottom = planeLocation.getY() - minFlightY;
@@ -145,9 +145,15 @@ public class AirspaceManager extends BukkitRunnable {
         double zOffset = BOUNDARY_DISPLAY_SCALE / 9;
 
         boolean ceiling = planeLocation.getY() > (double) (maxFlightY + minFlightY) / 2;
-        Location displayLocation = planeLocation.clone()
-                .add(0, ceiling ? 5 : -2 /*needed because the text display can bug visually when you get close to it*/, ceiling ? -zOffset : zOffset)
-                .setDirection(display.getLocation().getDirection());
+        Location currentDisplayLocation = display.getLocation();
+        Location displayLocation = new Location(
+                planeLocation.getWorld(),
+                planeLocation.getX(),
+                planeLocation.getY() + (ceiling ? 5 : -2 /*needed because the text display can bug visually when you get close to it*/),
+                planeLocation.getZ() + (ceiling ? -zOffset : zOffset),
+                currentDisplayLocation.getYaw(),
+                currentDisplayLocation.getPitch()
+        );
         display.teleport(displayLocation);
         display.setBackgroundColor(buildBoundaryBackground(distanceToBoundary));
 

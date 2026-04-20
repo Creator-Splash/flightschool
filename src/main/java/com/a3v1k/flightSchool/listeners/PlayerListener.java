@@ -81,4 +81,13 @@ public class PlayerListener implements Listener {
         event.setCancelled(true);
         spectator.sendMessage("You can only spectate your own team!");
     }
+
+    @EventHandler
+    public void onJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+        player.setExhaustion(0);
+    }
+
+    @EventHandler
+    public void on
 }

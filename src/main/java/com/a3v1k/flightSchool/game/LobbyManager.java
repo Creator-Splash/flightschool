@@ -75,7 +75,7 @@ public class LobbyManager {
             player.sendMessage(message);
         }
 
-        BossbarManager bossbarManager = new BossbarManager(20 * 20);
+        BossbarManager bossbarManager = new BossbarManager(5 * 20); // TODO: turn back to 20 seconds
         bossbarManager.runTaskTimer(this.plugin, 0, 1);
 
         FlightSchool.getInstance().getGameManager().setGameStartedAt(System.currentTimeMillis());
@@ -148,7 +148,7 @@ public class LobbyManager {
 
 
         // Start the cinematic
-        final int[] countdown = {5}; // TODO: Switch it back to 40
+        final int[] countdown = {0}; // TODO: Switch it back to 40
         new BukkitRunnable() {
             @Override
             public void run() {

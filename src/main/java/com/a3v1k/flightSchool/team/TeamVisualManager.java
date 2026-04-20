@@ -9,9 +9,21 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 
+import java.util.Map;
+
 public class TeamVisualManager {
 
     private final FlightSchool plugin;
+    private static final Map<String, String> ITEMSADDER_TEAM_IMAGES = Map.of(
+            "red", "orca",
+            "yellow", "seahorse",
+            "green", "turtle",
+            "blue", "dolphin",
+            "dark_violet", "stingray",
+            "violet", "jellyfish",
+            "dark_blue", "swordfish",
+            "orange", "octopus"
+    );
 
     public TeamVisualManager() {
         this.plugin = FlightSchool.getInstance();
@@ -80,6 +92,15 @@ public class TeamVisualManager {
         GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player);
         Team team = gamePlayer == null ? null : gamePlayer.getTeam();
 
+        if (isTabPluginEnabled()) {
+            if (team == null) {
+                resetTabPluginStyle(player);
+            } else {
+                applyTabPluginStyle(player, team);
+            }
+            return;
+        }
+
         if (team == null) {
             player.playerListName(Component.text(player.getName()));
             return;
@@ -87,6 +108,38 @@ public class TeamVisualManager {
 
         TextColor color = getTabColor(team);
         player.playerListName(Component.text(player.getName(), color));
+    }
+
+    public void applyTabPluginStyle(Player player, Team team) {
+        if (player == null || team == null || !isTabPluginEnabled()) {
+            return;
+        }
+
+        String imageName = ITEMSADDER_TEAM_IMAGES.getOrDefault(team.getName(), "");
+        String customName = "\"" + getTabColorCode(team) + player.getName() + "\"";
+
+        if (!imageName.isEmpty()) {
+            String tabPrefix = "\"%img_" + imageName + "% \"";
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                    "tab player " + player.getName() + " tabprefix " + tabPrefix);
+        } else {
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                    "tab player " + player.getName() + " tabprefix");
+        }
+
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                "tab player " + player.getName() + " customtabname " + customName);
+    }
+
+    public void resetTabPluginStyle(Player player) {
+        if (player == null || !isTabPluginEnabled()) {
+            return;
+        }
+
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                "tab player " + player.getName() + " tabprefix");
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+                "tab player " + player.getName() + " customtabname");
     }
 
     private void configureScoreboardTeam(org.bukkit.scoreboard.Team scoreboardTeam, Team configuredTeam) {
@@ -124,5 +177,23 @@ public class TeamVisualManager {
             case "orange" -> NamedTextColor.GOLD;
             default -> NamedTextColor.WHITE;
         };
+    }
+
+    private String getTabColorCode(Team team) {
+        return switch (team.getName()) {
+            case "red" -> "&c";
+            case "yellow" -> "&e";
+            case "green" -> "&a";
+            case "blue" -> "&b";
+            case "dark_violet" -> "&5";
+            case "violet" -> "&d";
+            case "dark_blue" -> "&9";
+            case "orange" -> "&6";
+            default -> "&f";
+        };
+    }
+
+    private boolean isTabPluginEnabled() {
+        return plugin.getServer().getPluginManager().isPluginEnabled("TAB");
     }
 }
