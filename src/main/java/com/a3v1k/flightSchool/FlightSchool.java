@@ -41,6 +41,7 @@ public final class FlightSchool extends JavaPlugin {
         getLogger().info("FlightSchool is enabling...");
 
         initializeManagers();
+        enableLocatorBarOnAllWorlds();
 
         this.initializeTeams();
         this.getLogger().info("FlightSchool has been enabled.");
@@ -84,11 +85,13 @@ public final class FlightSchool extends JavaPlugin {
 
     public void startGame() {
         this.getLogger().info("FlightSchool game is starting!");
+        enableLocatorBarOnAllWorlds();
         this.lobbyManager.startCinematic(new ArrayList<>(this.getServer().getOnlinePlayers()));
     }
 
     public void stopGame() {
         this.getLogger().info("FlightSchool game has stopped.");
+        enableLocatorBarOnAllWorlds();
         Title title = Title.builder()
                 .fadeIn(5)
                 .stay(40)
@@ -142,6 +145,7 @@ public final class FlightSchool extends JavaPlugin {
             return;
         }
 
+        enableLocatorBarOnAllWorlds();
         player.getInventory().clear();
         player.removePotionEffect(PotionEffectType.BLINDNESS);
         player.setFireTicks(0);
@@ -165,6 +169,12 @@ public final class FlightSchool extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new GameListener(this), this);
         this.getServer().getPluginManager().registerEvents(new TeamListener(this), this);
         this.getServer().getPluginManager().registerEvents(this.killcamManager, this);
+    }
+
+    private void enableLocatorBarOnAllWorlds() {
+        for (World world : Bukkit.getWorlds()) {
+            world.setGameRule(GameRule.LOCATOR_BAR, true);
+        }
     }
 
     public ScoreManager getScoreManager() {

@@ -1,6 +1,7 @@
 package com.a3v1k.flightSchool.game;
 
 import com.a3v1k.flightSchool.FlightSchool;
+import com.a3v1k.flightSchool.listeners.GameListener;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -8,8 +9,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.persistence.PersistentDataType;
@@ -43,6 +47,7 @@ public class AirspaceManager extends BukkitRunnable {
     private final NamespacedKey ownerKey;
     private final Map<UUID, Long> lastWarningAt = new HashMap<>();
     private final Map<UUID, BoundaryDisplays> boundaryDisplays = new HashMap<>();
+    private final Set<UUID> armedGroundCrashPlanes = new HashSet<>();
 
     public AirspaceManager(FlightSchool plugin, GameManager gameManager, int minFlightY, int maxFlightY) {
         this.plugin = plugin;
@@ -60,6 +65,7 @@ public class AirspaceManager extends BukkitRunnable {
         }
 
         Set<UUID> activePilots = new HashSet<>();
+        Set<UUID> activePlanes = new HashSet<>();
 
         for (List<ActiveMob> activeMobs : gameManager.getTeamPlanes().values()) {
             if (activeMobs == null) {
@@ -67,11 +73,11 @@ public class AirspaceManager extends BukkitRunnable {
             }
 
             for (ActiveMob activeMob : activeMobs) {
-                updatePlaneBoundary(activeMob, activePilots);
+                updatePlaneBoundary(activeMob, activePilots, activePlanes);
             }
         }
 
-        cleanupStaleDisplays(activePilots);
+        cleanupStaleState(activePilots, activePlanes);
     }
 
     public void shutdown() {
@@ -83,7 +89,7 @@ public class AirspaceManager extends BukkitRunnable {
         }
     }
 
-    private void updatePlaneBoundary(ActiveMob activeMob, Set<UUID> activePilots) {
+    private void updatePlaneBoundary(ActiveMob activeMob, Set<UUID> activePilots, Set<UUID> activePlanes) {
         if (activeMob == null || activeMob.isDead() || activeMob.getEntity() == null) {
             return;
         }
@@ -93,6 +99,8 @@ public class AirspaceManager extends BukkitRunnable {
             return;
         }
 
+        activePlanes.add(plane.getUniqueId());
+
         Player player = getOwner(plane);
         if (player == null) {
             return;
@@ -100,29 +108,40 @@ public class AirspaceManager extends BukkitRunnable {
 
         activePilots.add(player.getUniqueId());
 
+        if (!plane.isOnGround()) {
+            armedGroundCrashPlanes.add(plane.getUniqueId());
+        } else if (armedGroundCrashPlanes.contains(plane.getUniqueId())) {
+            crashPlane(activeMob, plane, player, "floor");
+            return;
+        }
+
         if (plane.getLocation().getY() > maxFlightY) {
-            clampPlane(plane, maxFlightY, false);
-            warnPilot(player, "ceiling");
+            crashPlane(activeMob, plane, player, "ceiling");
+            return;
         }
 
         if (plane.getLocation().getY() < minFlightY) {
-            clampPlane(plane, minFlightY, true);
-            warnPilot(player, "floor");
+            crashPlane(activeMob, plane, player, "floor");
+            return;
         }
 
         updateBoundaryDisplays(player, plane);
     }
 
-    private void clampPlane(Entity plane, int boundaryY, boolean pushUpward) {
-        Location clampedLocation = plane.getLocation().clone();
-        clampedLocation.setY(boundaryY);
-        plane.teleport(clampedLocation);
+    private void crashPlane(ActiveMob activeMob, Entity plane, Player player, String boundaryName) {
+        armedGroundCrashPlanes.remove(plane.getUniqueId());
 
-        Vector velocity = plane.getVelocity();
-        double verticalVelocity = pushUpward
-                ? Math.max(velocity.getY(), 0.6D)
-                : Math.min(velocity.getY(), -0.6D);
-        plane.setVelocity(new Vector(velocity.getX(), verticalVelocity, velocity.getZ()));
+        player.sendActionBar(Component.text("You crashed into the airspace " + boundaryName, NamedTextColor.RED));
+
+        if (plane instanceof LivingEntity livingEntity) {
+            if (!livingEntity.isDead()) {
+                livingEntity.setHealth(0.0D);
+            }
+            return;
+        }
+
+
+        activeMob.despawn();
     }
 
     private void updateBoundaryDisplays(Player player, Entity plane) {
@@ -247,7 +266,7 @@ public class AirspaceManager extends BukkitRunnable {
         }
     }
 
-    private void cleanupStaleDisplays(Set<UUID> activePilots) {
+    private void cleanupStaleState(Set<UUID> activePilots, Set<UUID> activePlanes) {
         boundaryDisplays.entrySet().removeIf(entry -> {
             if (activePilots.contains(entry.getKey())) {
                 return false;
@@ -258,6 +277,7 @@ public class AirspaceManager extends BukkitRunnable {
         });
 
         lastWarningAt.keySet().removeIf(uuid -> !activePilots.contains(uuid));
+        armedGroundCrashPlanes.removeIf(uuid -> !activePlanes.contains(uuid));
     }
 
     private void removeAllDisplays() {
@@ -267,6 +287,7 @@ public class AirspaceManager extends BukkitRunnable {
 
         boundaryDisplays.clear();
         lastWarningAt.clear();
+        armedGroundCrashPlanes.clear();
     }
 
 

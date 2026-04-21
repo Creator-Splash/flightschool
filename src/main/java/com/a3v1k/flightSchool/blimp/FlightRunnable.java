@@ -1,6 +1,7 @@
 package com.a3v1k.flightSchool.blimp;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -17,6 +18,7 @@ public class FlightRunnable extends BukkitRunnable {
             // regular horses don't suddenly start flying.
 
             applyFlightPhysics(player, horse);
+            checkForCollision(player, horse);
         }
     }
 

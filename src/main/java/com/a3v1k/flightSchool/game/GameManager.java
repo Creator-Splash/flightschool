@@ -486,7 +486,9 @@ public class GameManager {
     }
 
     private void spawnPlane(String teamName, Location location, Player player) {
-        MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("flightschool_plane_" + teamName.toLowerCase()).orElse(null);
+        MythicMob mob = MythicBukkit.inst().getMobManager().getMythicMob("plane_" + teamName.toLowerCase())
+                .or(() -> MythicBukkit.inst().getMobManager().getMythicMob("flightschool_plane_" + teamName.toLowerCase()))
+                .orElse(null);
         if (mob != null) {
             // spawns mob
             ActiveMob knight = mob.spawn(BukkitAdapter.adapt(location), 1);

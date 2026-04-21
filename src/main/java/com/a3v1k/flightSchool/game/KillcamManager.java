@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class KillcamManager implements Listener {
 
     private final Map<UUID, String> activeReplayNames = new HashMap<>();
     private final Map<UUID, String> pendingRespawns = new HashMap<>();
+    private final Map<UUID, BukkitTask> recordingTasks = new HashMap<>();
 
     private static final int WINDOW_SECONDS = 10;
 
@@ -33,25 +35,40 @@ public class KillcamManager implements Listener {
      * Start continuous rolling recording for player
      */
     public void startRecording(Player player) {
+        if (player == null || !player.isOnline()) {
+            return;
+        }
 
         UUID uuid = player.getUniqueId();
         String replayName = "live_" + uuid;
+
+        BukkitTask existingTask = recordingTasks.remove(uuid);
+        if (existingTask != null) {
+            existingTask.cancel();
+        }
+
+        String previousReplayName = activeReplayNames.remove(uuid);
+        if (previousReplayName != null) {
+            ReplayAPI.getInstance().stopReplay(previousReplayName, false);
+        }
 
         activeReplayNames.put(uuid, replayName);
 
         startNewRecording(player, replayName);
 
         // Restart recording every 10 seconds to simulate rolling buffer
-        new BukkitRunnable() {
+        BukkitTask recordingTask = new BukkitRunnable() {
             @Override
             public void run() {
 
                 if (!player.isOnline()) {
+                    recordingTasks.remove(uuid);
                     cancel();
                     return;
                 }
 
                 if (!activeReplayNames.containsKey(uuid)) {
+                    recordingTasks.remove(uuid);
                     cancel();
                     return;
                 }
@@ -64,6 +81,8 @@ public class KillcamManager implements Listener {
 
             }
         }.runTaskTimer(plugin, WINDOW_SECONDS * 20L, WINDOW_SECONDS * 20L);
+
+        recordingTasks.put(uuid, recordingTask);
     }
 
     private void startNewRecording(Player player, String replayName) {
@@ -124,8 +143,15 @@ public class KillcamManager implements Listener {
      * Optional cleanup
      */
     public void stopRecording(Player player) {
+        if (player == null) {
+            return;
+        }
 
         UUID uuid = player.getUniqueId();
+        BukkitTask recordingTask = recordingTasks.remove(uuid);
+        if (recordingTask != null) {
+            recordingTask.cancel();
+        }
         String replayName = activeReplayNames.remove(uuid);
 
         if (replayName != null) {
@@ -146,6 +172,10 @@ public class KillcamManager implements Listener {
             }
         }
 
+        for (BukkitTask recordingTask : recordingTasks.values()) {
+            recordingTask.cancel();
+        }
+        recordingTasks.clear();
         pendingRespawns.clear();
     }
 }
