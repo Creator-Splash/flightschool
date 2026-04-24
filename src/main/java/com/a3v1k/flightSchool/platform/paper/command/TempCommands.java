@@ -26,6 +26,7 @@ import io.lumine.mythic.api.mobs.MythicMob;
 import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -42,6 +43,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
+
 public class TempCommands implements CommandExecutor {
 
     private final FlightSchool plugin;
@@ -63,6 +66,33 @@ public class TempCommands implements CommandExecutor {
             if (strings.length == 0) {
                 player.sendMessage(ChatColor.YELLOW + "Usage: /fsh-test <cannons|planes|pastemap|tabicon|tabreset> [team]");
                 return true;
+            }
+
+            if (strings[0].equalsIgnoreCase("spawnplane")) {
+                if (strings.length < 3) {
+                    player.sendMessage("§cUsage: /fsh spawnplane <team> <player>");
+                    return true;
+                }
+                String teamName = strings[1].toLowerCase();
+                Team team = plugin.getGameManager().getTeam(teamName);
+                if (team == null) {
+                    player.sendMessage("§cTeam not found.");
+                    return true;
+                }
+                Player target = Bukkit.getPlayer(strings[2]);
+                if (target == null) {
+                    player.sendMessage("§cPlayer not online.");
+                    return true;
+                }
+                // Get the team's first plane spawn location from config
+                List<Location> locs = plugin.getConfigManager().getPlaneLocations().get(teamName);
+                if (locs == null || locs.isEmpty()) {
+                    player.sendMessage("§cNo plane spawn set for that team. Use /fsh set-plane first.");
+                    return true;
+                }
+                Location spawnLoc = locs.getFirst();
+                plugin.getGameManager().spawnDelayedPlane(teamName, spawnLoc, target, 0);
+                player.sendMessage("§aPlane spawned for " + target.getName() + " on team " + teamName);
             }
 
             if (strings[0].equalsIgnoreCase("cannons")) {

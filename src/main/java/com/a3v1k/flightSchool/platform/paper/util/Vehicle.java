@@ -61,6 +61,7 @@ public class Vehicle {
                             .with(FireworkEffect.Type.BALL)
                             .build());
                     firework.setFireworkMeta(fireworkMeta);
+                    firework.detonate();
                 }
 
                 List<Location> planeLocations = plugin.getConfigManager().getPlaneLocations().get(teamName);
