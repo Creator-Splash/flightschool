@@ -3,6 +3,7 @@ package com.a3v1k.flightSchool.platform.paper;
 import com.a3v1k.flightSchool.platform.paper.command.FlightSchoolCommand;
 import com.a3v1k.flightSchool.platform.paper.command.TempCommands;
 import com.a3v1k.flightSchool.application.game.*;
+import com.a3v1k.flightSchool.platform.paper.integration.FlightSchoolGameAdapter;
 import com.a3v1k.flightSchool.platform.paper.listener.GameListener;
 import com.a3v1k.flightSchool.platform.paper.listener.PlayerListener;
 import com.a3v1k.flightSchool.platform.paper.listener.TeamListener;
@@ -12,6 +13,7 @@ import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.application.team.TeamManager;
 import com.a3v1k.flightSchool.platform.paper.display.TeamVisualManager;
 import com.a3v1k.flightSchool.platform.paper.config.ConfigManager;
+import creatorsplash.creatorsplashcore.api.CreatorSplashCore;
 import com.destroystokyo.paper.Title;
 import lombok.Getter;
 import org.bukkit.*;
@@ -67,6 +69,8 @@ public class FlightSchool extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        CreatorSplashCore.register(this, new FlightSchoolGameAdapter(this));
 
         gameManager = new GameManager();
         lobbyManager = new LobbyManager();

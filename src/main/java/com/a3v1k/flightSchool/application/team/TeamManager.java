@@ -55,7 +55,7 @@ public class TeamManager {
         }
     }
 
-    private void teleportPlayerToSpawn(Player player, Team team) {
+    public void teleportPlayerToSpawn(Player player, Team team) {
         World world = Bukkit.getWorld("minecraft:game-world");
         if (world == null) {
             plugin.getLogger().severe("World 'minecraft:game-world' not found!");
