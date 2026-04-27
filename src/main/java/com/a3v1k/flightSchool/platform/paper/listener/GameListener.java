@@ -26,6 +26,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -103,6 +104,27 @@ public class GameListener implements Listener {
 
         event.setCancelled(true);
     }
+
+    @EventHandler
+    public void onVehicleExit(VehicleExitEvent event) {
+        if (!(event.getExited() instanceof Player)) return;
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return;
+
+        org.bukkit.entity.Vehicle bukkitVehicle = event.getVehicle();
+
+        MythicBukkit mythic = MythicBukkit.inst();
+        if (!mythic.getMobManager().isMythicMob(bukkitVehicle)) return;
+
+        Optional<ActiveMob> activeMob = mythic.getMobManager().getActiveMob(bukkitVehicle.getUniqueId());
+        if (activeMob.isEmpty()) return;
+
+        String faction = activeMob.get().getFaction();
+        if (faction != null && faction.contains("plane")) {
+            event.setCancelled(true);
+        }
+    }
+
+    /* Internals */
 
     private boolean isFaction(ActiveMob mob, String factionKey) {
         String faction = mob.getFaction();
