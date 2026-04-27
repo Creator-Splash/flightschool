@@ -234,6 +234,9 @@ public class GameManager {
 
     public void startGame(List<Player> playerList) {
         setGameState(GameState.IN_GAME);
+
+        this.runtime.setGameStartedAt(System.currentTimeMillis());
+
         this.plugin.enableLocatorBar();
         Map<String, List<Location>> cannonLocations = this.plugin.getConfigManager().getCannonLocations(); // Team: Location mappings
         Map<String, List<Location>> planeLocations = this.plugin.getConfigManager().getPlaneLocations();
