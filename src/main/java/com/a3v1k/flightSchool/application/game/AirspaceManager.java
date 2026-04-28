@@ -3,7 +3,9 @@ package com.a3v1k.flightSchool.application.game;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.platform.paper.listener.GameListener;
+import com.a3v1k.flightSchool.platform.paper.util.PdcKeys;
 import io.lumine.mythic.core.mobs.ActiveMob;
+import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -31,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class AirspaceManager extends BukkitRunnable {
 
     private static final long WARNING_COOLDOWN_MILLIS = 1_500L;
@@ -45,17 +48,8 @@ public class AirspaceManager extends BukkitRunnable {
     private final GameManager gameManager;
     private final int minFlightY;
     private final int maxFlightY;
-    private final NamespacedKey ownerKey;
     private final Map<UUID, Long> lastWarningAt = new HashMap<>();
     private final Map<UUID, BoundaryDisplays> boundaryDisplays = new HashMap<>();
-
-    public AirspaceManager(FlightSchool plugin, GameManager gameManager, int minFlightY, int maxFlightY) {
-        this.plugin = plugin;
-        this.gameManager = gameManager;
-        this.minFlightY = minFlightY;
-        this.maxFlightY = maxFlightY;
-        this.ownerKey = new NamespacedKey(plugin, "owner_uuid");
-    }
 
     @Override
     public void run() {
@@ -228,7 +222,8 @@ public class AirspaceManager extends BukkitRunnable {
     }
 
     private Player getOwner(Entity plane) {
-        String ownerUuid = plane.getPersistentDataContainer().get(ownerKey, PersistentDataType.STRING);
+        String ownerUuid = plane.getPersistentDataContainer()
+            .get(PdcKeys.OWNER_UUID, PersistentDataType.STRING);
         if (ownerUuid == null) {
             return null;
         }

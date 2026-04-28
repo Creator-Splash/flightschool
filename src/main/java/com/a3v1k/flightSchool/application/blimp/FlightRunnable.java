@@ -6,6 +6,7 @@ import com.a3v1k.flightSchool.application.game.GameManager;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
+import com.a3v1k.flightSchool.platform.paper.util.PdcKeys;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -35,14 +36,12 @@ public class FlightRunnable extends BukkitRunnable {
 
     private final FlightSchool plugin;
     private final GameManager gameManager;
-    private final NamespacedKey ownerKey;
 
     private final Set<UUID> cancelPlayerPlaneMovements = new HashSet<>();
 
     public FlightRunnable(FlightSchool plugin, GameManager gameManager) {
         this.plugin = plugin;
         this.gameManager = gameManager;
-        this.ownerKey = new NamespacedKey(plugin, "owner_uuid");
     }
 
     @Override
@@ -169,7 +168,8 @@ public class FlightRunnable extends BukkitRunnable {
     }
 
     private Player getOwner(Entity plane) {
-        String ownerUuid = plane.getPersistentDataContainer().get(ownerKey, PersistentDataType.STRING);
+        String ownerUuid = plane.getPersistentDataContainer()
+            .get(PdcKeys.OWNER_UUID, PersistentDataType.STRING);
         if (ownerUuid == null) {
             return null;
         }

@@ -8,7 +8,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -51,6 +53,18 @@ public class PlayerListener implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         plugin.getGameManager().removePlayer(event.getPlayer());
         Bukkit.getScheduler().runTask(plugin, () -> plugin.getTeamVisualManager().refreshAll());
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return;
+
+        EntityDamageEvent.DamageCause cause = event.getCause();
+        if (cause == EntityDamageEvent.DamageCause.VOID ||
+            cause == EntityDamageEvent.DamageCause.WORLD_BORDER) return;
+
+        event.setCancelled(true);
     }
 
     @EventHandler

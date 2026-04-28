@@ -161,7 +161,8 @@ public final class FlightSchoolGameAdapter implements GameAdapter {
 
     private void publishStartFailed(GameContext ctx, String reason) {
         try {
-            ProxyConnector.getInstance().notifyGameStartFailed(ctx.eventId(), gameId(), reason);
+            //ProxyConnector.getInstance().notifyGameStartFailed(ctx.eventId(), gameId(), reason);
+            // TODO RECONNECT THIS
         } catch (Throwable t) {
             plugin.getLogger().warning(
                     "[FlightSchoolGameAdapter] Could not publish GAME_START_FAILED: " + t.getMessage());

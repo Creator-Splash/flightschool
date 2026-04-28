@@ -3,37 +3,27 @@ package com.a3v1k.flightSchool.platform.paper.listener;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.application.game.WarningManager;
-import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.util.Vehicle;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.FireworkEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
-import org.bukkit.inventory.meta.FireworkMeta;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.awt.event.FocusEvent;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -80,7 +70,8 @@ public class GameListener implements Listener {
             return;
         }
 
-        this.plugin.getLogger().info("[Detected Turret Damage] Team Turret: " + team.getName() + " || Team attacking: " + attackingTeamName);
+        this.plugin.getLogger().info("[Detected Turret Damage] Team Turret: %s || Team attacking: %s"
+            .formatted(team.getName(), attackingTeamName));
 
         for (Player player : team.getPlaneMembers()) {
             if (warningManagerMap.containsKey(player)) continue;
@@ -88,6 +79,46 @@ public class GameListener implements Listener {
             warningManagerMap.put(player, new WarningManager(player));
             warningManagerMap.get(player).runTaskTimer(this.plugin, 0, 1);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onModelDamage(EntityDamageEvent event) {
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return;
+
+        Entity entity = event.getEntity();
+        if (!(entity instanceof LivingEntity livingEntity)) return;
+
+        MythicBukkit mythic = MythicBukkit.inst();
+        if (!mythic.getMobManager().isMythicMob(entity)) return;
+
+        Optional<ActiveMob> activeMob = mythic.getMobManager().getActiveMob(entity.getUniqueId());
+        if (activeMob.isEmpty()) return;
+
+        ActiveMob mob = activeMob.get();
+        if (!isFaction(mob, "plane") && !isFaction(mob, "turret")) return;
+
+        NamespacedKey key = new NamespacedKey(plugin, "owner_uuid");
+        String uuidString = entity.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+        if (uuidString == null) return;
+
+        Player player = Bukkit.getPlayer(UUID.fromString(uuidString));
+        if (player == null || !player.isOnline()) return;
+
+        AttributeInstance modelMaxHealthAttr = livingEntity.getAttribute(Attribute.MAX_HEALTH);
+        AttributeInstance playerMaxHealthAttr = player.getAttribute(Attribute.MAX_HEALTH);
+
+        if (modelMaxHealthAttr == null || playerMaxHealthAttr == null) return;
+
+        double modelMaxHealth = modelMaxHealthAttr.getValue();
+        double modelCurrentHealth = Math.max(0, livingEntity.getHealth() - event.getFinalDamage());
+        double playerMaxHealth = playerMaxHealthAttr.getValue();
+        double newPlayerHealth = Math.max(0.1, (modelCurrentHealth / modelMaxHealth) * playerMaxHealth);
+
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) {
+                player.setHealth(newPlayerHealth);
+            }
+        });
     }
 
     @EventHandler

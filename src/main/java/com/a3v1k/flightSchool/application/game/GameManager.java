@@ -409,6 +409,11 @@ public class GameManager {
         return this.runtime.getTeamPlaneMaps();
     }
 
+    public boolean teamHasAliveTurret(Team team) {
+        int totalCannons = getRoleLimit(Role.CANNON_OPERATOR);
+        return team.getDestroyedBlimps() < totalCannons;
+    }
+
     private int getAliveBlimps() {
         int aliveBlimps = 0;
         for(Team team : this.getTeams().values()) {
@@ -559,15 +564,17 @@ public class GameManager {
     public void spawnDelayedPlane(String teamName, Location location, Player player, int delay) {
         Team team = getTeam(teamName);
         GamePlayer gamePlayer = getGamePlayer(player);
-        if (team != null && team.getBlimpDestroyed() && !gamePlayer.isLastStand()) {
+
+        // Block respawn if all cannons are gone
+        if (team != null && !teamHasAliveTurret(team)) {
             player.showTitle(Title.title(
-                    Component.text("Your blimp is destroyed!"),
-                    Component.text("You cannot respawn."),
-                    Title.Times.times(
-                            Duration.ofMillis(500),
-                            Duration.ofMillis(3500),
-                            Duration.ofMillis(1000)
-                    )
+                Component.text("Eliminated!", NamedTextColor.RED),
+                Component.text("Your team's cannons have been destroyed."),
+                Title.Times.times(
+                    Duration.ofMillis(500),
+                    Duration.ofMillis(3500),
+                    Duration.ofMillis(1000)
+                )
             ));
             return;
         }
@@ -575,14 +582,9 @@ public class GameManager {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if(team != null && team.getBlimpDestroyed() && gamePlayer.isLastStand()) {
-                    gamePlayer.setLastStand(false);
-                    gamePlayer.setEliminated(true);
-                }
-
                 spawnPlane(teamName, location, player);
             }
-        }.runTaskLater(this.plugin, delay* 20L);
+        }.runTaskLater(this.plugin, delay * 20L);
     }
 
     public GameRuntime getRuntime() {
