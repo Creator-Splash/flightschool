@@ -35,7 +35,8 @@ public class GameRuntime {
     private long gameStartedAt = -1L;
 
     public void addPlayer(Player player) {
-        players.put(player.getUniqueId(), new GamePlayer(player));
+        players.put(player.getUniqueId(),
+            new GamePlayer(player.getUniqueId()));
     }
 
     public void removePlayer(Player player) {
@@ -43,7 +44,8 @@ public class GameRuntime {
     }
 
     public GamePlayer getGamePlayer(Player player) {
-        return player == null ? null : players.computeIfAbsent(player.getUniqueId(), k -> new GamePlayer(player));
+        return player == null ? null : players.computeIfAbsent(player.getUniqueId(), k ->
+            new GamePlayer(player.getUniqueId()));
     }
 
     public void addTeam(Team team) {
@@ -75,8 +77,8 @@ public class GameRuntime {
 
     public long getRoleCount(Team team, Role role) {
         return players.values().stream()
-                .filter(player -> player.getTeam() == team && player.getRole() == role)
-                .count();
+            .filter(player -> player.getTeam() == team && player.getRole() == role)
+            .count();
     }
 
 }

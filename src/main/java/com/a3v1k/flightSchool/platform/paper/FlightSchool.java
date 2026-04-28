@@ -1,9 +1,11 @@
 package com.a3v1k.flightSchool.platform.paper;
 
+import com.a3v1k.flightSchool.application.scheduler.Scheduler;
 import com.a3v1k.flightSchool.platform.paper.command.FlightSchoolCommand;
 import com.a3v1k.flightSchool.platform.paper.command.TempCommands;
 import com.a3v1k.flightSchool.application.game.*;
 import com.a3v1k.flightSchool.platform.paper.integration.FlightSchoolGameAdapter;
+import com.a3v1k.flightSchool.platform.paper.integration.scheduler.PaperSchedulerAdapter;
 import com.a3v1k.flightSchool.platform.paper.listener.GameListener;
 import com.a3v1k.flightSchool.platform.paper.listener.PlayerListener;
 import com.a3v1k.flightSchool.platform.paper.listener.TeamListener;
@@ -36,6 +38,9 @@ public class FlightSchool extends JavaPlugin {
     @Getter
     private static FlightSchool instance;
 
+    @Getter
+    private Scheduler scheduler;
+
     private GameManager gameManager;
     private TeamManager teamManager;
     private TeamVisualManager teamVisualManager;
@@ -47,6 +52,8 @@ public class FlightSchool extends JavaPlugin {
     public void onEnable() {
         instance = this;
         getLogger().info("FlightSchool is enabling...");
+
+        this.scheduler = new PaperSchedulerAdapter(this);
 
         initializeManagers();
         startLocatorBarGuard();

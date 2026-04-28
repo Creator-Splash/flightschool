@@ -80,7 +80,7 @@ public class Vehicle {
         List<Location> planeLocations = plugin.getConfigManager().getPlaneLocations().get(teamName);
         if (planeLocations == null || planeLocations.isEmpty()) return;
 
-        Location respawnLocation = resolveRespawnLocation(team, pilot, planeLocations);
+        Location respawnLocation = resolveRespawnLocation(plugin, team, pilot, planeLocations);
 
         spawnTeamFirework(entity, team);
 
@@ -91,11 +91,12 @@ public class Vehicle {
     }
 
     private Location resolveRespawnLocation(
+        FlightSchool plugin,
         Team team,
         Player pilot,
         List<Location> planeLocations
     ) {
-        int teamIndex = team.getPlaneMembers().indexOf(pilot);
+        int teamIndex = plugin.getGameManager().getPlaneMembers(team).indexOf(pilot);
         int respawnIndex = (teamIndex >= 0)
             ? Math.min(teamIndex, planeLocations.size() - 1)
             : 0;

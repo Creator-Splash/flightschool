@@ -46,23 +46,6 @@ public class Team {
         cannonCount--;
     }
 
-
-    public List<Player> getCannonMembers() {
-        return getMembers().stream().map(Bukkit::getPlayer)
-                .filter(player -> player != null
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getTeam() == this
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getRole() == Role.CANNON_OPERATOR)
-                .collect(Collectors.toList());
-    }
-
-    public List<Player> getPlaneMembers() {
-        return getMembers().stream().map(Bukkit::getPlayer)
-                .filter(player -> player != null
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getTeam() == this
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getRole() == Role.PLANE_PILOT)
-                .collect(Collectors.toList());
-    }
-
     public void addMember(Player player) {
         if (!members.contains(player.getUniqueId())) {
             members.add(player.getUniqueId());

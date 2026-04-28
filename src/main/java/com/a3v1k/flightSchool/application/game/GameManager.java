@@ -285,7 +285,7 @@ public class GameManager {
 
         for(Map.Entry<String, List<Location>> cannonMap : cannonLocations.entrySet()) {
             Team team = this.plugin.getGameManager().getTeam(cannonMap.getKey());
-            List<Player> players = team.getCannonMembers();
+            List<Player> players = getCannonMembers(team);
 
             players.forEach(p -> p.getInventory().clear());
 
@@ -349,7 +349,7 @@ public class GameManager {
         // Do planes now.
         for (Map.Entry<String, List<Location>> planeMap : planeLocations.entrySet()) {
             Team team = this.plugin.getGameManager().getTeam(planeMap.getKey());
-            List<Player> players = team.getPlaneMembers();
+            List<Player> players = getPlaneMembers(team);
 
             players.forEach(p -> p.getInventory().clear());
 
@@ -547,7 +547,7 @@ public class GameManager {
 
     private void registerActivePlane(Team team, Player player, ActiveMob planeMob) {
         List<ActiveMob> activePlanes = runtime.getTeamPlaneMaps().computeIfAbsent(team, key -> new ArrayList<>());
-        int planeIndex = team.getPlaneMembers().indexOf(player);
+        int planeIndex = getPlaneMembers(team).indexOf(player);
 
         if (planeIndex < 0) {
             activePlanes.add(planeMob);
@@ -585,6 +585,26 @@ public class GameManager {
                 spawnPlane(teamName, location, player);
             }
         }.runTaskLater(this.plugin, delay * 20L);
+    }
+
+    public List<Player> getCannonMembers(Team team) {
+        return team.getMembers().stream()
+            .map(Bukkit::getPlayer)
+            .filter(player -> player != null
+                && getGamePlayer(player) != null
+                && getGamePlayer(player).getTeam() == team
+                && getGamePlayer(player).getRole() == Role.CANNON_OPERATOR)
+            .toList();
+    }
+
+    public List<Player> getPlaneMembers(Team team) {
+        return team.getMembers().stream()
+            .map(Bukkit::getPlayer)
+            .filter(player -> player != null
+                && getGamePlayer(player) != null
+                && getGamePlayer(player).getTeam() == team
+                && getGamePlayer(player).getRole() == Role.PLANE_PILOT)
+            .toList();
     }
 
     public GameRuntime getRuntime() {
