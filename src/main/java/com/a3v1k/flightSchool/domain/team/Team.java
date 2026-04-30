@@ -1,5 +1,6 @@
 package com.a3v1k.flightSchool.domain.team;
 
+import com.a3v1k.flightSchool.application.game.BlimpHealthManager;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.player.Role;
@@ -27,6 +28,8 @@ public class Team {
     private int cannonCount = 2;
     private boolean blimpDestroyed = false;
     private int destroyedBlimps = 0;
+    @Getter @Setter
+    private BlimpHealthManager healthManager;
 
     public Team(String displayName, String name, Color color, String spawnRegionName) {
         this.displayName = displayName;

@@ -79,11 +79,18 @@ public class Vehicle {
                 plugin.getKillcamManager().stopRecording(player);
                 player.setGameMode(GameMode.SPECTATOR);
 
+                GamePlayer gamePlayer = FlightSchool.getInstance().getGameManager().getGamePlayer(player);
+
                 new BukkitRunnable() {
                     int secondsRemaining = 5;
-
                     @Override
                     public void run() {
+
+                        if (gamePlayer.isLastStand()) {
+                            cancel();
+                            return;
+                        };
+
                         if (!player.isOnline() || plugin.getGameManager().getGameState() != GameState.IN_GAME) {
                             cancel();
                             return;

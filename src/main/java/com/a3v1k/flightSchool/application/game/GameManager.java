@@ -90,6 +90,9 @@ public class GameManager {
                     {"orange", BlockTypes.ORANGE_CONCRETE}
             };
             Team team = getTeam(teams[i][0].toString());
+            if (team == null) {
+                continue;
+            }
 
             double angleDeg = i * 45;
             double angleRad = Math.toRadians(angleDeg);
@@ -99,6 +102,7 @@ public class GameManager {
             int y = center.getBlockY();
 
             BlockVector3 pastePos = BlockVector3.at(x, y, z);
+            team.setBlimpSpawnLocation(new Location(world, x + 0.5, y, z + 0.5));
 
             AffineTransform transform = new AffineTransform().rotateY(-angleDeg);
 
@@ -329,7 +333,9 @@ public class GameManager {
                     }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
                 }
             }
-            BlimpHealthManager blimpHealthManager = new BlimpHealthManager(activeMobs);
+            BlimpHealthManager blimpHealthManager = new BlimpHealthManager(activeMobs, team);
+            team.setHealthManager(blimpHealthManager);
+
             blimpHealthManager.runTaskTimer(this.plugin, 0, 1);
             runtime.getHealthManagers().put(team.getName(), blimpHealthManager);
         }
@@ -744,6 +750,10 @@ public class GameManager {
                 int y = center.y();
 
                 BlockVector3 pastePos = BlockVector3.at(x, y, z);
+                Team team = getTeam(teamName.toLowerCase(Locale.ROOT).replace(" ", "_"));
+                if (team != null) {
+                    team.setBlimpSpawnLocation(new Location(location.getWorld(), x + 0.5, y, z + 0.5));
+                }
 
                 // ---------------------------------------------------
                 // 4. Color Replacement (On Original Scale)

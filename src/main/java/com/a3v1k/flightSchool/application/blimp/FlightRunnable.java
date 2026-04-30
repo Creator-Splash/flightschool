@@ -143,11 +143,11 @@ public class FlightRunnable extends BukkitRunnable {
         return null;
     }
 
-    private String findNearestBlimpTeam(Location location) {
+    public static String findNearestBlimpTeam(Location location) {
         String nearestTeam = null;
         double nearestDistanceSquared = Double.MAX_VALUE;
 
-        for (BlimpData blimp : gameManager.getRuntime().getBlimps().values()) {
+        for (BlimpData blimp : FlightSchool.getInstance().getGameManager().getRuntime().getBlimps().values()) {
             for (int segment = 0; segment < blimp.segmentCount(); segment++) {
                 for (Location blimpBlock : blimp.getSegment(segment)) {
                     if (!blimpBlock.getWorld().equals(location.getWorld())) {

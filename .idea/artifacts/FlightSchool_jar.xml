@@ -1,6 +1,6 @@
 <component name="ArtifactManager">
   <artifact type="jar" name="FlightSchool:jar">
-    <output-path>$USER_HOME$/AppData/Roaming/.feather/player-server/servers/44a79550-205e-45d2-a163-08e854a9315e/plugins</output-path>
+    <output-path>$USER_HOME$/Downloads</output-path>
     <root id="archive" name="FlightSchool.jar">
       <element id="module-output" name="FlightSchool" />
     </root>

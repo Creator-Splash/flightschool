@@ -1,6 +1,6 @@
 name: FlightSchool
 version: '0.01-alpha'
-main: com.a3v1k.flightSchool.FlightSchool
+main: com.a3v1k.flightSchool.platform.paper.FlightSchool
 api-version: '1.21'
 depend:
   - CreatorSplashCore

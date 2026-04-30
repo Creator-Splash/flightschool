@@ -93,7 +93,7 @@ public class PointsExpansion extends PlaceholderExpansion {
                     yield "";
                 }
 
-                yield " | Blimp Health: " + this.plugin.getGameManager().getHealthManager().get(team.getName()).getHealth() + "%";
+                yield " | Blimp Health: " + this.plugin.getGameManager().getHealthManager().get(team.getName()).getHealthPercentage() + "%";
             }
 
             case "boost_hint" -> getBoostHint(gamePlayer);

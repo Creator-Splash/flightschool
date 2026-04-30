@@ -3,6 +3,7 @@ package com.a3v1k.flightSchool.domain.player;
 import com.a3v1k.flightSchool.domain.team.Team;
 import lombok.Getter;
 import lombok.Setter;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -22,6 +23,10 @@ public class GamePlayer {
 
     public GamePlayer(Player player) {
         this.uuid = player.getUniqueId();
+    }
+
+    public Player getBukkitPlayer() {
+        return Bukkit.getPlayer(uuid);
     }
 
 }

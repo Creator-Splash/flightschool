@@ -16,6 +16,8 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
+import java.util.UUID;
+
 public class PlayerListener implements Listener {
     private final FlightSchool plugin;
 
