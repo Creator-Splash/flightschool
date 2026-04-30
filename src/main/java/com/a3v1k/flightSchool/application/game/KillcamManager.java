@@ -3,7 +3,6 @@ package com.a3v1k.flightSchool.application.game;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import me.jumper251.replay.api.ReplayAPI;
 import me.jumper251.replay.api.ReplaySessionFinishEvent;
-import me.jumper251.replay.replaysystem.Replay;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -16,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class KillcamManager implements Listener {
+public final class KillcamManager implements Listener {
 
     private final FlightSchool plugin;
 
@@ -61,23 +60,23 @@ public class KillcamManager implements Listener {
             @Override
             public void run() {
 
-                if (!player.isOnline()) {
-                    recordingTasks.remove(uuid);
-                    cancel();
-                    return;
-                }
+            if (!player.isOnline()) {
+                recordingTasks.remove(uuid);
+                cancel();
+                return;
+            }
 
-                if (!activeReplayNames.containsKey(uuid)) {
-                    recordingTasks.remove(uuid);
-                    cancel();
-                    return;
-                }
+            if (!activeReplayNames.containsKey(uuid)) {
+                recordingTasks.remove(uuid);
+                cancel();
+                return;
+            }
 
-                // Stop old recording (save)
-                ReplayAPI.getInstance().stopReplay(replayName, false, true);
+            // Stop old recording (save)
+            ReplayAPI.getInstance().stopReplay(replayName, false, true);
 
-                // Start new one
-                startNewRecording(player, replayName);
+            // Start new one
+            startNewRecording(player, replayName);
 
             }
         }.runTaskTimer(plugin, WINDOW_SECONDS * 20L, WINDOW_SECONDS * 20L);
@@ -128,11 +127,11 @@ public class KillcamManager implements Listener {
 
         player.setGameMode(GameMode.SURVIVAL);
 
-        plugin.getGameManager().spawnDelayedPlane(
-                teamName,
-                plugin.getConfigManager().getPlaneLocations().get(teamName).get(0),
-                player,
-                0
+        plugin.getGameOrchestrator().spawnDelayedPlane(
+            teamName,
+            plugin.getConfigManager().getPlaneLocations().get(teamName).getFirst(),
+            player,
+            0
         );
 
         // Restart rolling recording

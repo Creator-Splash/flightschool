@@ -1,19 +1,33 @@
-target/
-dependency-reduced-pom.xml
-
-.idea/
+# idea project files
+.idea/*
 *.iml
-*.iws
 *.ipr
+*.iws
+
+!.idea/icon.png
+!.idea/codeStyles
+!.idea/inspectionProfiles
+
+# gradle
+.gradle/
+build/
 out/
 
-.vscode/
-.classpath
-.project
-.settings/
+# user
+run
+bin
 
-*.class
-*.log
-*.bak
-*.swp
-.DS_Store
+!src/*/run
+!src/*/bin
+
+docker/
+run/
+
+.env
+local.properties
+
+.kotlin/
+/target
+
+# local build-time dependency drop (rebuilt on demand)
+libs/CreatorSplashCore-*.jar

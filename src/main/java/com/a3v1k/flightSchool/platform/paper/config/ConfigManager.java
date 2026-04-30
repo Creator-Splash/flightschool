@@ -30,6 +30,21 @@ public class ConfigManager {
         }
     }
 
+    public int getMatchDuration() {
+        YamlConfiguration config = this.fileManager.getConfig();
+
+        if (!config.contains("match.duration-seconds")) {
+            config.set("match.duration0-seconds", 600);
+            try {
+                this.fileManager.save(config);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return config.getInt("match.duration-seconds", 600);
+    }
+
     public void addCannonLocation(String teamName, Location location) {
         YamlConfiguration config = this.fileManager.getConfig();
 

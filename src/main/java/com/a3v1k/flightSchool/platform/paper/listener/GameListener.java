@@ -1,38 +1,30 @@
 package com.a3v1k.flightSchool.platform.paper.listener;
 
+import com.a3v1k.flightSchool.application.scheduler.Scheduler;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.match.GameState;
-import com.a3v1k.flightSchool.application.game.WarningManager;
-import com.a3v1k.flightSchool.domain.player.GamePlayer;
+import com.a3v1k.flightSchool.platform.paper.game.PaperWarningManager;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.util.Vehicle;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.FireworkEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
+import org.bukkit.attribute.Attribute;
+import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Firework;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 
-import java.awt.event.FocusEvent;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,7 +32,8 @@ import java.util.UUID;
 public class GameListener implements Listener {
 
     private final FlightSchool plugin;
-    private final Map<Player, WarningManager> warningManagerMap = new HashMap<>();
+
+    private final Map<Player, PaperWarningManager> warningManagerMap = new HashMap<>();
 
     public GameListener(FlightSchool plugin) {
         this.plugin = plugin;
@@ -52,10 +45,8 @@ public class GameListener implements Listener {
         Entity damager = event.getDamager();
 
         MythicBukkit inst = MythicBukkit.inst();
-        boolean isVictimMythic = inst.getMobManager().isMythicMob(entity);
-        boolean isAttackerMythic = inst.getMobManager().isMythicMob(damager);
-
-        if (!isVictimMythic || !isAttackerMythic) return;
+        if (!inst.getMobManager().isMythicMob(entity)) return;
+        if (!inst.getMobManager().isMythicMob(damager)) return;
 
         Optional<ActiveMob> victim = inst.getMobManager().getActiveMob(entity.getUniqueId());
         Optional<ActiveMob> attacker = inst.getMobManager().getActiveMob(damager.getUniqueId());
@@ -65,28 +56,74 @@ public class GameListener implements Listener {
 
         String victimTeamName = extractTeamName(victim.get());
         String attackingTeamName = extractTeamName(attacker.get());
+
         if (victimTeamName != null && victimTeamName.equalsIgnoreCase(attackingTeamName)) {
             event.setCancelled(true);
             return;
         }
 
-        if (!isFaction(victim.get(), "turret")) {
-            return;
-        }
+        if (!isFaction(victim.get(), "turret")) return;
 
-        Team team = this.plugin.getGameManager().getTeam(victimTeamName);
-        if (team == null) {
-            return;
-        }
+        Team team = plugin.getGameManager().getTeam(victimTeamName);
+        if (team == null) return;
 
-        this.plugin.getLogger().info("[Detected Turret Damage] Team Turret: " + team.getName() + " || Team attacking: " + attackingTeamName);
+        plugin.getLogger().info("[Detected Turret Damage] Team Turret: %s || Team attacking: %s"
+            .formatted(team.getName(), attackingTeamName));
 
-        for (Player player : team.getPlaneMembers()) {
+        for (Player player : plugin.getGameManager().getPlaneMembers(team)) {
             if (warningManagerMap.containsKey(player)) continue;
 
-            warningManagerMap.put(player, new WarningManager(player));
-            warningManagerMap.get(player).runTaskTimer(this.plugin, 0, 1);
+            PaperWarningManager warningManager = new PaperWarningManager(player);
+            warningManagerMap.put(player, warningManager);
+
+            plugin.getScheduler().runRepeating(t -> {
+                warningManager.update();
+                if (warningManager.isFinished()) {
+                    t.cancel();
+                    warningManagerMap.remove(player);
+                }
+            }, 0L, 1L);
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onModelDamage(EntityDamageEvent event) {
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return;
+
+        Entity entity = event.getEntity();
+        if (!(entity instanceof LivingEntity livingEntity)) return;
+
+        MythicBukkit mythic = MythicBukkit.inst();
+        if (!mythic.getMobManager().isMythicMob(entity)) return;
+
+        Optional<ActiveMob> activeMob = mythic.getMobManager().getActiveMob(entity.getUniqueId());
+        if (activeMob.isEmpty()) return;
+
+        ActiveMob mob = activeMob.get();
+        if (!isFaction(mob, "plane") && !isFaction(mob, "turret")) return;
+
+        NamespacedKey key = new NamespacedKey(plugin, "owner_uuid");
+        String uuidString = entity.getPersistentDataContainer().get(key, PersistentDataType.STRING);
+        if (uuidString == null) return;
+
+        Player player = Bukkit.getPlayer(UUID.fromString(uuidString));
+        if (player == null || !player.isOnline()) return;
+
+        AttributeInstance modelMaxHealthAttr = livingEntity.getAttribute(Attribute.MAX_HEALTH);
+        AttributeInstance playerMaxHealthAttr = player.getAttribute(Attribute.MAX_HEALTH);
+
+        if (modelMaxHealthAttr == null || playerMaxHealthAttr == null) return;
+
+        double modelMaxHealth = modelMaxHealthAttr.getValue();
+        double modelCurrentHealth = Math.max(0, livingEntity.getHealth() - event.getFinalDamage());
+        double playerMaxHealth = playerMaxHealthAttr.getValue();
+        double newPlayerHealth = Math.max(0.1, (modelCurrentHealth / modelMaxHealth) * playerMaxHealth);
+
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) {
+                player.setHealth(newPlayerHealth);
+            }
+        });
     }
 
     @EventHandler
@@ -103,6 +140,27 @@ public class GameListener implements Listener {
 
         event.setCancelled(true);
     }
+
+    @EventHandler
+    public void onVehicleExit(VehicleExitEvent event) {
+        if (!(event.getExited() instanceof Player)) return;
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return;
+
+        org.bukkit.entity.Vehicle bukkitVehicle = event.getVehicle();
+
+        MythicBukkit mythic = MythicBukkit.inst();
+        if (!mythic.getMobManager().isMythicMob(bukkitVehicle)) return;
+
+        Optional<ActiveMob> activeMob = mythic.getMobManager().getActiveMob(bukkitVehicle.getUniqueId());
+        if (activeMob.isEmpty()) return;
+
+        String faction = activeMob.get().getFaction();
+        if (faction != null && faction.contains("plane")) {
+            event.setCancelled(true);
+        }
+    }
+
+    /* Internals */
 
     private boolean isFaction(ActiveMob mob, String factionKey) {
         String faction = mob.getFaction();

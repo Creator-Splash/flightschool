@@ -8,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class ScoreManager {
+public final class ScoreManager {
 
     private final FlightSchool plugin;
     private final Map<UUID, Integer> playerScores = new HashMap<>();
@@ -20,7 +20,7 @@ public class ScoreManager {
 
     public void addScore(Player player, int score) {
         playerScores.put(player.getUniqueId(), getScore(player) + score);
-        Team team = plugin.getGameManager().getGamePlayer(player).getTeam();
+        Team team = plugin.getGameManager().getGamePlayer(player.getUniqueId()).getTeam();
         if (team != null) {
             addScore(team, score);
         }

@@ -1,8 +1,8 @@
 package com.a3v1k.flightSchool.application.team;
 
+import com.a3v1k.flightSchool.application.game.GameManager;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
-import com.a3v1k.flightSchool.application.game.GameManager;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldguard.WorldGuard;
@@ -37,7 +37,9 @@ public class TeamManager {
             User user = luckPerms.getUserManager().getUser(player.getUniqueId());
             if (user != null) {
                 String primaryGroup = user.getPrimaryGroup();
-                if (!primaryGroup.equalsIgnoreCase("Team") && !primaryGroup.equalsIgnoreCase("Owner")) {
+                if (!primaryGroup.equalsIgnoreCase("Team")
+                    && !primaryGroup.equalsIgnoreCase("Owner")
+                ) {
                     playersToAssign.add(player);
                 }
             }
@@ -49,7 +51,7 @@ public class TeamManager {
         int teamIndex = 0;
         for (Player player : playersToAssign) {
             Team team = teams.get(teamIndex);
-            gameManager.assignPlayerToTeam(player, team);
+            gameManager.assignPlayerToTeam(player.getUniqueId(), team);
             teleportPlayerToSpawn(player, team);
             teamIndex = (teamIndex + 1) % teams.size();
         }
@@ -62,7 +64,11 @@ public class TeamManager {
             return;
         }
 
-        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        RegionManager regionManager = WorldGuard.getInstance()
+            .getPlatform()
+            .getRegionContainer()
+            .get(BukkitAdapter.adapt(world));
+
         if (regionManager == null) {
             plugin.getLogger().severe("Region manager for world 'minecraft:game-world' not found!");
             return;
@@ -74,7 +80,11 @@ public class TeamManager {
             return;
         }
 
-        BlockVector3 center = region.getMaximumPoint().subtract(region.getMinimumPoint()).divide(2).add(region.getMinimumPoint());
+        BlockVector3 center = region.getMaximumPoint()
+            .subtract(region.getMinimumPoint())
+            .divide(2)
+            .add(region.getMinimumPoint());
+
         Location spawnLocation = new Location(world, center.x(), center.y(), center.z());
         player.teleport(spawnLocation);
     }

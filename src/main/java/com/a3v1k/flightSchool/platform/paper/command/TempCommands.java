@@ -54,7 +54,7 @@ public class TempCommands implements CommandExecutor {
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] strings) {
         if(!commandSender.hasPermission("flightSchool.admin")) return true;
 
         if (command.getName().equalsIgnoreCase("fsh-test")) {
@@ -91,7 +91,7 @@ public class TempCommands implements CommandExecutor {
                     return true;
                 }
                 Location spawnLoc = locs.getFirst();
-                plugin.getGameManager().spawnDelayedPlane(teamName, spawnLoc, target, 0);
+                plugin.getGameOrchestrator().spawnDelayedPlane(teamName, spawnLoc, target, 0);
                 player.sendMessage("§aPlane spawned for " + target.getName() + " on team " + teamName);
             }
 
@@ -168,7 +168,7 @@ public class TempCommands implements CommandExecutor {
             }
 
             if (strings[0].equalsIgnoreCase("pastemap")) {
-                this.plugin.getGameManager().pasteMap(player.getLocation(), 8);
+                this.plugin.getGameOrchestrator().pasteMap(player.getLocation(), 8);
                 return true;
             }
 
@@ -210,7 +210,7 @@ public class TempCommands implements CommandExecutor {
             return plugin.getGameManager().getTeam(args[1].toLowerCase());
         }
 
-        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player);
+        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
         return gamePlayer == null ? null : gamePlayer.getTeam();
     }
 }
