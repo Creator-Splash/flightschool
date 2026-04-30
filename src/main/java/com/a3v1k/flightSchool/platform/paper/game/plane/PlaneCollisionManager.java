@@ -1,34 +1,32 @@
-package com.a3v1k.flightSchool.application.blimp;
+package com.a3v1k.flightSchool.platform.paper.game.plane;
 
+import com.a3v1k.flightSchool.application.game.GameManager;
+import com.a3v1k.flightSchool.application.scheduler.Scheduler;
 import com.a3v1k.flightSchool.domain.blimp.BlimpData;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
-import com.a3v1k.flightSchool.application.game.GameManager;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
+import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
 import com.a3v1k.flightSchool.platform.paper.util.PdcKeys;
 import io.lumine.mythic.core.mobs.ActiveMob;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.NamespacedKey;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.bukkit.util.Vector;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
-public class FlightRunnable extends BukkitRunnable {
+@RequiredArgsConstructor
+public final class PlaneCollisionManager {
 
     private static final double COLLISION_LOOKAHEAD = 3.0D;
     private static final double COLLISION_STEP = 0.5D;
@@ -37,84 +35,74 @@ public class FlightRunnable extends BukkitRunnable {
     private final FlightSchool plugin;
     private final GameManager gameManager;
 
-    private final Set<UUID> cancelPlayerPlaneMovements = new HashSet<>();
+    private Scheduler.Task task;
 
-    public FlightRunnable(FlightSchool plugin, GameManager gameManager) {
-        this.plugin = plugin;
-        this.gameManager = gameManager;
+    public void start(Scheduler scheduler) {
+        task = scheduler.runRepeating(this::update, 0L, 1L);
     }
 
-    @Override
-    public void run() {
+    public void stop() {
+        if (task != null) {
+            task.cancel();
+            task = null;
+        }
+    }
+
+    private void update() {
         if (gameManager.getGameState() != GameState.IN_GAME) {
-            cancel();
+            stop();
             return;
         }
 
-        Set<UUID> activePlaneIds = new HashSet<>();
+        if (!(plugin.getGameManager() instanceof PaperGameManager paperGameManager)) return;
 
-        for (List<ActiveMob> activeMobs : gameManager.getTeamPlanes().values()) {
-            if (activeMobs == null) {
-                continue;
-            }
-
+        for (List<ActiveMob> activeMobs : paperGameManager.getTeamPlanes().values()) {
+            if (activeMobs == null) continue;
             for (ActiveMob activeMob : activeMobs) {
-                if (activeMob != null && activeMob.getEntity() != null) {
-                    activePlaneIds.add(activeMob.getEntity().getUniqueId());
-                }
                 checkForCollision(activeMob);
             }
         }
-
     }
 
     private void checkForCollision(ActiveMob activeMob) {
-        if (activeMob == null || activeMob.isDead() || activeMob.getEntity() == null) {
-            return;
-        }
+        if (activeMob == null || activeMob.isDead() || activeMob.getEntity() == null) return;
 
         Entity plane = activeMob.getEntity().getBukkitEntity();
-        if (plane == null || !plane.isValid()) {
-            return;
-        }
+        if (plane == null || !plane.isValid()) return;
 
-        Player player = getOwner(plane);
-        if (player == null) {
-            return;
-        }
+        Player player = getOwnerPlayer(plane);
+        if (player == null) return;
 
         Location collisionLocation = findCollisionLocation(plane, player.getLocation().getDirection());
-        if (collisionLocation == null) {
-            return;
-        }
+        if (collisionLocation == null) return;
 
-        GamePlayer gamePlayer = gameManager.getGamePlayer(player);
+        GamePlayer gamePlayer = gameManager.getGamePlayer(player.getUniqueId());
         Team playerTeam = gamePlayer == null ? null : gamePlayer.getTeam();
         String nearestBlimpTeam = findNearestBlimpTeam(collisionLocation);
 
         if (playerTeam != null && playerTeam.getName().equalsIgnoreCase(nearestBlimpTeam)) {
-            bounceBack(player, plane, player.getLocation().add(0, player.getEyeHeight() / 2, 0).subtract(collisionLocation).toVector().normalize()/*direction away from collision point*/);
+            Vector bounceDirection = player.getLocation()
+                .add(0, player.getEyeHeight() / 2, 0)
+                .subtract(collisionLocation)
+                .toVector()
+                .normalize();
+            bounceBack(player, plane, bounceDirection);
             return;
         }
 
         crashPlane(plane);
     }
 
-
     private Location findCollisionLocation(Entity plane, Vector direction) {
         for (double distance = COLLISION_STEP; distance <= COLLISION_LOOKAHEAD; distance += COLLISION_STEP) {
-            Vector offset = direction.clone().multiply(distance);
             BoundingBox projectedBox = plane.getBoundingBox()
-                    .clone()
-                    .expand(1.0D, 0.0D, 1.0D)
-                    .shift(offset);
-            Location collisionLocation = findSolidBlockIn(projectedBox, plane.getWorld());
+                .clone()
+                .expand(1.0D, 0.0D, 1.0D)
+                .shift(direction.clone().multiply(distance));
 
-            if (collisionLocation != null) {
-                return collisionLocation;
-            }
+            Location collision = findSolidBlockIn(projectedBox, plane.getWorld());
+            if (collision != null) return collision;
         }
-
         return null;
     }
 
@@ -130,15 +118,10 @@ public class FlightRunnable extends BukkitRunnable {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     Block block = world.getBlockAt(x, y, z);
-                    if (!block.getType().isSolid()) {
-                        continue;
-                    }
-
-                    return block.getLocation();
+                    if (block.getType().isSolid()) return block.getLocation();
                 }
             }
         }
-
         return null;
     }
 
@@ -146,17 +129,15 @@ public class FlightRunnable extends BukkitRunnable {
         String nearestTeam = null;
         double nearestDistanceSquared = Double.MAX_VALUE;
 
-        for (BlimpData blimp : gameManager.getRuntime().getBlimps().values()) {
+        if (!(plugin.getGameManager() instanceof PaperGameManager paperGameManager)) return null;
+
+        for (BlimpData blimp : paperGameManager.getRuntime().getBlimps().values()) {
             for (int segment = 0; segment < blimp.segmentCount(); segment++) {
                 for (Location blimpBlock : blimp.getSegment(segment)) {
-                    if (!blimpBlock.getWorld().equals(location.getWorld())) {
-                        continue;
-                    }
+                    if (!blimpBlock.getWorld().equals(location.getWorld())) continue;
 
                     double distanceSquared = blimpBlock.distanceSquared(location);
-                    if (distanceSquared >= nearestDistanceSquared) {
-                        continue;
-                    }
+                    if (distanceSquared >= nearestDistanceSquared) continue;
 
                     nearestDistanceSquared = distanceSquared;
                     nearestTeam = blimp.getTeamName();
@@ -167,40 +148,29 @@ public class FlightRunnable extends BukkitRunnable {
         return nearestTeam;
     }
 
-    private Player getOwner(Entity plane) {
-        String ownerUuid = plane.getPersistentDataContainer()
-            .get(PdcKeys.OWNER_UUID, PersistentDataType.STRING);
-        if (ownerUuid == null) {
-            return null;
-        }
-
-        try {
-            return Bukkit.getPlayer(UUID.fromString(ownerUuid));
-        } catch (IllegalArgumentException ignored) {
-            return null;
-        }
-    }
-
-
     private void bounceBack(Player player, Entity plane, Vector direction) {
         Vector velocity = direction.clone().normalize().multiply(BOUNCE_SPEED);
-
         plane.setVelocity(velocity);
         plane.setFallDistance(0.0F);
         player.setFallDistance(0.0F);
-
-        cancelPlayerPlaneMovements.add(player.getUniqueId());
-        new BukkitRunnable() {
-            public void run() {
-                cancelPlayerPlaneMovements.remove(player.getUniqueId());
-            }
-        }.runTaskLater(plugin, 4L);
-
     }
 
     private void crashPlane(Entity plane) {
-        if (plane instanceof LivingEntity livingEntity && !livingEntity.isDead()) {
-            livingEntity.setHealth(0.0D);
+        if (plane instanceof LivingEntity le && !le.isDead()) {
+            le.setHealth(0.0D);
         }
     }
+
+    private Player getOwnerPlayer(Entity plane) {
+        String uuidString = plane.getPersistentDataContainer()
+            .get(PdcKeys.OWNER_UUID, PersistentDataType.STRING);
+        if (uuidString == null) return null;
+
+        try {
+            return Bukkit.getPlayer(UUID.fromString(uuidString));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
 }

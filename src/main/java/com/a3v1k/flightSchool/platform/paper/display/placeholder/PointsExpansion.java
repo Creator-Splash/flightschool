@@ -6,6 +6,7 @@ import com.a3v1k.flightSchool.application.game.ScoreManager;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.player.Role;
 import com.a3v1k.flightSchool.domain.team.Team;
+import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
 import dev.lone.itemsadder.api.FontImages.FontImageWrapper;
 import dev.lone.itemsadder.api.ItemsAdder;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
@@ -85,7 +86,7 @@ public class PointsExpansion extends PlaceholderExpansion {
         }
         if (player == null) return "";
 
-        GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player);
+        GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player.getUniqueId());
         if (gamePlayer == null) return "";
 
         Team team = gamePlayer.getTeam();
@@ -112,14 +113,22 @@ public class PointsExpansion extends PlaceholderExpansion {
             case "health_2" -> getPlaneHealth(team, 1);
             case "health_3" ->getPlaneHealth(team, 2);
 
-            case "scores_value_1" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("red")));
-            case "scores_value_2" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("yellow")));
-            case "scores_value_3" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("green")));
-            case "scores_value_4" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("blue")));
-            case "scores_value_5" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("dark_violet")));
-            case "scores_value_6" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("violet")));
-            case "scores_value_7" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("dark_blue")));
-            case "scores_value_8" -> String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("orange")));
+            case "scores_value_1" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("red")));
+            case "scores_value_2" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("yellow")));
+            case "scores_value_3" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("green")));
+            case "scores_value_4" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("blue")));
+            case "scores_value_5" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("dark_violet")));
+            case "scores_value_6" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("violet")));
+            case "scores_value_7" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("dark_blue")));
+            case "scores_value_8" ->
+                String.valueOf(plugin.getScoreManager().getScore(plugin.getGameManager().getTeam("orange")));
 
             default -> null;
         };
@@ -134,20 +143,22 @@ public class PointsExpansion extends PlaceholderExpansion {
     }
 
     private String getPlaneHealth(Team team, int planeIndex){
-        if(this.plugin.getGameManager().getTeamPlanes() == null) {
+        if (!(plugin.getGameManager() instanceof PaperGameManager paperGameManager)) return "";
+
+        if (paperGameManager.getTeamPlanes().isEmpty()) {
             return "";
         }
 
-        if(this.plugin.getGameManager().getTeamPlanes().get(team).isEmpty()) {
+        if (paperGameManager.getTeamPlanes().get(team).isEmpty()) {
             return "";
         }
 
-        if(this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex) == null) {
+        if(paperGameManager.getTeamPlanes().get(team).get(planeIndex) == null) {
             return "⚠ PLANE INACTIVE ⚠";
         }
 
-        double planeHealth = this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex).getEntity().getHealth();
-        double maxHealth = this.plugin.getGameManager().getTeamPlanes().get(team).get(planeIndex).getEntity().getMaxHealth();
+        double planeHealth = paperGameManager.getTeamPlanes().get(team).get(planeIndex).getEntity().getHealth();
+        double maxHealth = paperGameManager.getTeamPlanes().get(team).get(planeIndex).getEntity().getMaxHealth();
 
         return String.valueOf(planeHealth / maxHealth * 100) + "%";
     }

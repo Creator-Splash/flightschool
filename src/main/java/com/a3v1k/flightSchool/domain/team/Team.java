@@ -4,6 +4,7 @@ import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.player.Role;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Getter @Setter
+@RequiredArgsConstructor
 public class Team {
 
     private final String displayName;
@@ -28,13 +30,6 @@ public class Team {
     private boolean blimpDestroyed = false;
     private int destroyedBlimps = 0;
 
-    public Team(String displayName, String name, Color color, String spawnRegionName) {
-        this.displayName = displayName;
-        this.name = name;
-        this.color = color;
-        this.spawnRegionName = spawnRegionName;
-    }
-
     public boolean getBlimpDestroyed() {
         return this.blimpDestroyed;
     }
@@ -46,14 +41,14 @@ public class Team {
         cannonCount--;
     }
 
-    public void addMember(Player player) {
-        if (!members.contains(player.getUniqueId())) {
-            members.add(player.getUniqueId());
+    public void addMember(UUID playerId) {
+        if (!members.contains(playerId)) {
+            members.add(playerId);
         }
     }
 
-    public void removeMember(Player player) {
-        members.remove(player.getUniqueId());
+    public void removeMember(UUID playerId) {
+        members.remove(playerId);
     }
 
     public void resetRoundState() {

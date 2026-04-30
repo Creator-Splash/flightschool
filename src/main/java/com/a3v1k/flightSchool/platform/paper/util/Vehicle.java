@@ -5,6 +5,7 @@ import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
+import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import lombok.experimental.UtilityClass;
@@ -185,9 +186,7 @@ public class Vehicle {
         setTeamSpectator(team);
         despawnTeamPlanes(plugin, team);
 
-        plugin.getGameManager().explodeBlimp(
-                plugin.getGameManager().getBlimp(teamName), team
-        );
+        plugin.getGameOrchestrator().explodeBlimp(teamName);
     }
 
     private static void setTeamSpectator(Team team) {
@@ -200,7 +199,9 @@ public class Vehicle {
     }
 
     private static void despawnTeamPlanes(FlightSchool plugin, Team team) {
-        List<ActiveMob> teamPlanes = plugin.getGameManager().getTeamPlanes().get(team);
+        if (!(plugin.getGameManager() instanceof PaperGameManager paperGameManager)) return;
+
+        List<ActiveMob> teamPlanes = paperGameManager.getTeamPlanes().get(team);
         if (teamPlanes == null) return;
 
         for (ActiveMob plane : teamPlanes) {

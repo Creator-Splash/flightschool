@@ -1,8 +1,9 @@
 package com.a3v1k.flightSchool.platform.paper.listener;
 
+import com.a3v1k.flightSchool.application.scheduler.Scheduler;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.match.GameState;
-import com.a3v1k.flightSchool.application.game.WarningManager;
+import com.a3v1k.flightSchool.platform.paper.game.PaperWarningManager;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.util.Vehicle;
 import io.lumine.mythic.bukkit.MythicBukkit;
@@ -31,7 +32,8 @@ import java.util.UUID;
 public class GameListener implements Listener {
 
     private final FlightSchool plugin;
-    private final Map<Player, WarningManager> warningManagerMap = new HashMap<>();
+
+    private final Map<Player, PaperWarningManager> warningManagerMap = new HashMap<>();
 
     public GameListener(FlightSchool plugin) {
         this.plugin = plugin;
@@ -43,10 +45,8 @@ public class GameListener implements Listener {
         Entity damager = event.getDamager();
 
         MythicBukkit inst = MythicBukkit.inst();
-        boolean isVictimMythic = inst.getMobManager().isMythicMob(entity);
-        boolean isAttackerMythic = inst.getMobManager().isMythicMob(damager);
-
-        if (!isVictimMythic || !isAttackerMythic) return;
+        if (!inst.getMobManager().isMythicMob(entity)) return;
+        if (!inst.getMobManager().isMythicMob(damager)) return;
 
         Optional<ActiveMob> victim = inst.getMobManager().getActiveMob(entity.getUniqueId());
         Optional<ActiveMob> attacker = inst.getMobManager().getActiveMob(damager.getUniqueId());
@@ -56,28 +56,33 @@ public class GameListener implements Listener {
 
         String victimTeamName = extractTeamName(victim.get());
         String attackingTeamName = extractTeamName(attacker.get());
+
         if (victimTeamName != null && victimTeamName.equalsIgnoreCase(attackingTeamName)) {
             event.setCancelled(true);
             return;
         }
 
-        if (!isFaction(victim.get(), "turret")) {
-            return;
-        }
+        if (!isFaction(victim.get(), "turret")) return;
 
-        Team team = this.plugin.getGameManager().getTeam(victimTeamName);
-        if (team == null) {
-            return;
-        }
+        Team team = plugin.getGameManager().getTeam(victimTeamName);
+        if (team == null) return;
 
-        this.plugin.getLogger().info("[Detected Turret Damage] Team Turret: %s || Team attacking: %s"
+        plugin.getLogger().info("[Detected Turret Damage] Team Turret: %s || Team attacking: %s"
             .formatted(team.getName(), attackingTeamName));
 
-        for (Player player : team.getPlaneMembers()) {
+        for (Player player : plugin.getGameManager().getPlaneMembers(team)) {
             if (warningManagerMap.containsKey(player)) continue;
 
-            warningManagerMap.put(player, new WarningManager(player));
-            warningManagerMap.get(player).runTaskTimer(this.plugin, 0, 1);
+            PaperWarningManager warningManager = new PaperWarningManager(player);
+            warningManagerMap.put(player, warningManager);
+
+            plugin.getScheduler().runRepeating(t -> {
+                warningManager.update();
+                if (warningManager.isFinished()) {
+                    t.cancel();
+                    warningManagerMap.remove(player);
+                }
+            }, 0L, 1L);
         }
     }
 
