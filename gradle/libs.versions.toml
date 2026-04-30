@@ -1,0 +1,70 @@
+[versions]
+paper = "1.21.8-R0.1-SNAPSHOT"
+paperweight = "2.0.0-beta.21"
+
+# Cloud
+cloud = "2.0.0"
+cloud-paper = "2.0.0-beta.10"
+
+# Plugin integrations
+worldedit = "7.4.0"
+worldguard = "7.0.10"
+mythicmobs = "5.6.1"
+modelengine = "R4.0.4"
+luckperms = "5.4"
+placeholderapi = "2.12.1"
+itemsadder = "4.0.10"
+advancedreplay = "dbffd733d9"
+
+# Utility
+lombok = "1.18.42"
+jetbrains-annotations = "26.0.2-1"
+auto-service = "1.1.1"
+
+# Plugins
+shadow = "8.3.5"
+plugin-yml = "0.6.0"
+paperweight-plugin = "2.0.0-beta.21"
+
+[libraries]
+
+# Paper
+paper-api = { module = "io.papermc.paper:paper-api", version.ref = "paper" }
+
+# WorldEdit / WorldGuard
+worldedit = { module = "com.sk89q.worldedit:worldedit-bukkit", version.ref = "worldedit" }
+worldguard = { module = "com.sk89q.worldguard:worldguard-bukkit", version.ref = "worldguard" }
+
+# MythicMobs
+mythicmobs = { module = "io.lumine:Mythic-Dist", version.ref = "mythicmobs" }
+
+# ModelEngine
+modelengine = { module = "com.ticxo.modelengine:ModelEngine", version.ref = "modelengine" }
+
+# LuckPerms
+luckperms = { module = "net.luckperms:api", version.ref = "luckperms" }
+
+# PlaceholderAPI
+papi = { module = "me.clip:placeholderapi", version.ref = "placeholderapi" }
+
+# ItemsAdder
+itemsadder-api = { module = "dev.lone:api-itemsadder", version.ref = "itemsadder" }
+
+# AdvancedReplay
+advancedreplay = { module = "com.github.Jumper251:AdvancedReplay", version.ref = "advancedreplay" }
+
+# Cloud
+cloud-core = { module = "org.incendo:cloud-core", version.ref = "cloud" }
+cloud-annotations = { module = "org.incendo:cloud-annotations", version.ref = "cloud" }
+cloud-paper = { module = "org.incendo:cloud-paper", version.ref = "cloud-paper" }
+
+# Utility
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
+auto-service = { module = "com.google.auto.service:auto-service", version.ref = "auto-service" }
+auto-service-annotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "auto-service" }
+
+[plugins]
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
+plugin-yml = { id = "net.minecrell.plugin-yml.paper", version.ref = "plugin-yml" }
+paperweight = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight-plugin" }

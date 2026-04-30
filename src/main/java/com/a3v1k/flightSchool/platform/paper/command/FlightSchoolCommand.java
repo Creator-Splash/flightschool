@@ -85,13 +85,13 @@ public class FlightSchoolCommand implements CommandExecutor {
                     return true;
                 }
 
-                GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(target);
+                GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(target.getUniqueId());
                 if(gamePlayer == null) {
                     player.sendMessage("Player " + args[1] + " does not exist.");
                     return true;
                 }
 
-                plugin.getGameManager().assignPlayerToTeam(target, team);
+                plugin.getGameManager().assignPlayerToTeam(target.getUniqueId(), team);
                 player.sendMessage("You've set " + args[1] +  " in the " + team.getName() + " team.");
             }
 
@@ -102,7 +102,7 @@ public class FlightSchoolCommand implements CommandExecutor {
                     player.sendMessage("You can only select a role during the role selection phase.");
                     return true;
                 }
-                GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player);
+                GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
                 if (gamePlayer.getRole() != null) {
                     player.sendMessage("You have already selected a role.");
                     return true;
@@ -118,7 +118,7 @@ public class FlightSchoolCommand implements CommandExecutor {
                     return true;
                 }
 
-                plugin.getGameManager().assignRole(player, roleToAssign);
+                plugin.getGameManager().assignRole(player.getUniqueId(), roleToAssign);
                 player.sendMessage("You have been assigned as a " + roleToAssign.toString().replace('_', ' ') + ".");
                 plugin.getLogger().log(Level.INFO, "{0} has been assigned as a {1}", new Object[]{player.getName(), roleToAssign});
             }

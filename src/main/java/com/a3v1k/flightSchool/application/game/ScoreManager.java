@@ -20,7 +20,7 @@ public final class ScoreManager {
 
     public void addScore(Player player, int score) {
         playerScores.put(player.getUniqueId(), getScore(player) + score);
-        Team team = plugin.getGameManager().getGamePlayer(player).getTeam();
+        Team team = plugin.getGameManager().getGamePlayer(player.getUniqueId()).getTeam();
         if (team != null) {
             addScore(team, score);
         }

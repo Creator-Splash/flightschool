@@ -28,17 +28,17 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        plugin.getGameManager().addPlayer(player);
+        plugin.getGameManager().addPlayer(player.getUniqueId());
 
-        if(plugin.getGameManager().getGameState() != GameState.LOBBY) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
+        if (plugin.getGameManager().getGameState() != GameState.LOBBY) {
+            plugin.getScheduler().run(() -> {
                 plugin.enableLocatorBarForPlayer(player);
                 plugin.getTeamVisualManager().refreshAll();
             });
             return;
         }
 
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().run(() -> {
             plugin.resetPlayerToLobby(player, false);
             plugin.getTeamVisualManager().refreshAll();
         });
@@ -51,7 +51,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.getGameManager().removePlayer(event.getPlayer());
+        plugin.getGameManager().removePlayer(event.getPlayer().getUniqueId());
         Bukkit.getScheduler().runTask(plugin, () -> plugin.getTeamVisualManager().refreshAll());
     }
 
@@ -74,12 +74,12 @@ public class PlayerListener implements Listener {
         if(event.getNewGameMode() != GameMode.SPECTATOR) return;
 
         Player player = event.getPlayer();
-        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player);
+        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
         if (gamePlayer == null || gamePlayer.getTeam() == null) return;
 
         Team team = gamePlayer.getTeam();
         for (Player teamMember : plugin.getServer().getOnlinePlayers()) {
-            GamePlayer teamMemberGamePlayer = plugin.getGameManager().getGamePlayer(teamMember);
+            GamePlayer teamMemberGamePlayer = plugin.getGameManager().getGamePlayer(teamMember.getUniqueId());
             if (teamMemberGamePlayer == null || teamMemberGamePlayer.getTeam() != team || teamMember == player) continue;
 
             player.setSpectatorTarget(teamMember);
@@ -96,8 +96,8 @@ public class PlayerListener implements Listener {
         if (event.getTo().getWorld().getEntities().isEmpty()) return;
         if (!(event.getTo().getWorld().getEntities().getFirst() instanceof Player target)) return;
 
-        GamePlayer spectatorGamePlayer = plugin.getGameManager().getGamePlayer(spectator);
-        GamePlayer targetGamePlayer = plugin.getGameManager().getGamePlayer(target);
+        GamePlayer spectatorGamePlayer = plugin.getGameManager().getGamePlayer(spectator.getUniqueId());
+        GamePlayer targetGamePlayer = plugin.getGameManager().getGamePlayer(target.getUniqueId());
 
         if(spectatorGamePlayer == null || targetGamePlayer == null) return;
         if(spectatorGamePlayer.getTeam() == null || targetGamePlayer.getTeam() == null) return;
