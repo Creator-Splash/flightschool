@@ -1,5 +1,6 @@
 package com.a3v1k.flightSchool.application.game;
 
+import com.a3v1k.flightSchool.domain.blimp.BlimpData;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
@@ -12,6 +13,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Display;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Transformation;
@@ -23,9 +25,12 @@ import java.util.UUID;
 public class BlimpHealthManager extends BukkitRunnable {
 
     private final List<ActiveMob> activeMobs;
-    private static final double maxHealth = 500;
+    private static final double FALLBACK_TURRET_HEALTH = 150;
+    private final double maxHealth;
     @Getter
-    public double health = maxHealth;
+    private final int initialTurretCount;
+    @Getter
+    public double health;
     private final Team team;
     @Getter @Setter
     private boolean broken = false;
@@ -35,6 +40,9 @@ public class BlimpHealthManager extends BukkitRunnable {
     public BlimpHealthManager(List<ActiveMob> activeMobs, Team team) {
         this.activeMobs = activeMobs;
         this.team = team;
+        this.initialTurretCount = Math.max(1, activeMobs.size());
+        this.maxHealth = determineMaxHealth(activeMobs);
+        this.health = maxHealth;
     }
 
     @Override
@@ -59,18 +67,19 @@ public class BlimpHealthManager extends BukkitRunnable {
     public void updateDisplay() {
         if (team.getMembers().isEmpty()) return;
         if (display == null) {
-            Location displayLocation = team.getBlimpSpawnLocation().clone().add(20, 45, 100);
+            Location displayLocation = getDisplayLocation();
 
             displayLocation.getWorld().spawn(displayLocation, TextDisplay.class, textDisplay -> {
                 this.display = textDisplay;
 
                 Transformation transformation = display.getTransformation();
-                transformation.getScale().set(15);
+                transformation.getScale().set(40);
 
                 display.setTransformation(transformation);
                 display.setBillboard(Display.Billboard.CENTER);
                 display.setShadowed(false);
                 display.setBackgroundColor(Color.fromARGB(0, 0, 0, 0));
+                display.setViewRange(1000);
             });
 
         }
@@ -81,6 +90,15 @@ public class BlimpHealthManager extends BukkitRunnable {
 
     }
 
+    private Location getDisplayLocation() {
+        BlimpData blimp = FlightSchool.getInstance().getGameManager().getBlimp(team.getName());
+        if (blimp != null) {
+            return blimp.getCenter().clone().add(0, 50, 0);
+        }
+
+        return team.getBlimpSpawnLocation().clone().add(0, 50, 0);
+    }
+
     private @NotNull String getHealthDisplayString() {
         if (broken) return ChatColor.RED + "Destroyed";
 
@@ -88,14 +106,14 @@ public class BlimpHealthManager extends BukkitRunnable {
         int healthPercentage = getHealthPercentage();
 
         int bars = 0;
-        while (bars <= healthPercentage / 10) {
+        while (bars <= healthPercentage / 2) {
             healthDisplay += "|";
             bars++;
         }
 
-        healthDisplay += ChatColor.GRAY + "" + ChatColor.BOLD;
+        healthDisplay += ChatColor.RED + "" + ChatColor.BOLD;
 
-        while (bars < 10) {
+        while (bars < 50) {
             healthDisplay += "|";
             bars++;
         }
@@ -108,8 +126,31 @@ public class BlimpHealthManager extends BukkitRunnable {
         update();
     }
 
+    public boolean hasAllTurretsDestroyed() {
+        return team.getDestroyedBlimps() >= initialTurretCount;
+    }
+
     public int getHealthPercentage() {
         return (int) Math.ceil((health / maxHealth) * 100);
+    }
+
+    private double determineMaxHealth(List<ActiveMob> activeMobs) {
+        double totalHealth = 0;
+
+        for (ActiveMob activeMob : activeMobs) {
+            if (activeMob == null || activeMob.getEntity() == null) {
+                totalHealth += FALLBACK_TURRET_HEALTH;
+                continue;
+            }
+
+            if (activeMob.getEntity().getBukkitEntity() instanceof LivingEntity livingEntity) {
+                totalHealth += livingEntity.getMaxHealth();
+            } else {
+                totalHealth += FALLBACK_TURRET_HEALTH;
+            }
+        }
+
+        return totalHealth <= 0 ? FALLBACK_TURRET_HEALTH : totalHealth;
     }
 
     public void disable() {

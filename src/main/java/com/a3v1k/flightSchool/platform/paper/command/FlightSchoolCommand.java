@@ -1,7 +1,5 @@
 package com.a3v1k.flightSchool.platform.paper.command;
 
-import com.a3v1k.flightSchool.application.blimp.FlightRunnable;
-import com.a3v1k.flightSchool.application.game.GameManager;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
@@ -180,17 +178,9 @@ public class FlightSchoolCommand implements CommandExecutor {
 
                 Location hitLocation = new Location(world, x, y, z);
 
-                GameManager gameManager = FlightSchool.getInstance().getGameManager();
-
-                GamePlayer gamePlayer = gameManager.getGamePlayer(shooter);
-                Team playerTeam = gamePlayer == null ? null : gamePlayer.getTeam();
-                Team nearestBlimpTeam = gameManager.getTeam(FlightRunnable.findNearestBlimpTeam(hitLocation));
-
-                if (nearestBlimpTeam.getMembers().isEmpty()) return false;
-
-                nearestBlimpTeam.getHealthManager().damage(1);
-                if (playerTeam != nearestBlimpTeam) {
-                }
+                // Plane projectiles can strike ordinary blimp blocks. Those hits are
+                // visual-only; blimp health is damaged by turret entity hits instead.
+                plugin.getLogger().fine("Plane projectile hit block " + hitBlockType + " at " + hitLocation);
 
             }
 

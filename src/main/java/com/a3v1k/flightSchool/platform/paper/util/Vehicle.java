@@ -150,7 +150,7 @@ public class Vehicle {
             ));
 
             team.increaseDestroyedBlimps();
-            if (team.getDestroyedBlimps() != 1) return;
+            if (team.getHealthManager() != null && !team.getHealthManager().hasAllTurretsDestroyed()) return;
 
             team.setBlimpDestroyed(true);
 

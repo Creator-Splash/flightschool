@@ -387,21 +387,39 @@ public class GameManager {
                     this.plugin.getKillcamManager().startRecording(player);
                     index += 1;
 
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            if (knight.isDead() || !player.isOnline()) return;
-
-                            // Now that the 'seat' bone exists, this signal will work
-                            knight.signalMob(BukkitAdapter.adapt(player), "mountPlane");
-                            if (!knight.getEntity().getBukkitEntity().getPassengers().contains(player)) {
-                                knight.getEntity().getBukkitEntity().addPassenger(player);
-                            }
-                        }
-                    }.runTaskLater(this.plugin, 10L); // Delay 10 ticks (0.5 seconds)
+                    mountPlaneWhenReady(knight, player);
                 }
             }
         }
+    }
+
+    private void mountPlaneWhenReady(ActiveMob planeMob, Player player) {
+        new BukkitRunnable() {
+            private int attempts = 0;
+
+            @Override
+            public void run() {
+                if (planeMob.isDead() || !player.isOnline()) {
+                    cancel();
+                    return;
+                }
+
+                attempts++;
+
+                planeMob.signalMob(BukkitAdapter.adapt(player), "mountPlane");
+
+                if (player.isInsideVehicle()) {
+                    cancel();
+                    return;
+                }
+
+                if (attempts >= 20) {
+                    plugin.getLogger().warning("[FlightSchool] Failed to ModelEngine-mount plane pilot "
+                            + player.getName() + " after " + attempts + " attempts.");
+                    cancel();
+                }
+            }
+        }.runTaskTimer(this.plugin, 20L, 5L);
     }
 
     public Map<String, BlimpHealthManager> getHealthManager() {

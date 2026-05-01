@@ -81,6 +81,9 @@ public class GameListener implements Listener {
         }
 
         this.plugin.getLogger().info("[Detected Turret Damage] Team Turret: " + team.getName() + " || Team attacking: " + attackingTeamName);
+        if (team.getHealthManager() != null) {
+            team.getHealthManager().damage(event.getFinalDamage());
+        }
 
         for (Player player : team.getPlaneMembers()) {
             if (warningManagerMap.containsKey(player)) continue;

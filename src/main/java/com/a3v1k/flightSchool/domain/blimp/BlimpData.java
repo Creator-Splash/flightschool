@@ -13,6 +13,7 @@ public class BlimpData {
     private final String teamName;
 
     private final List<List<Location>> segments;
+    private final Location center;
 
     public BlimpData(String teamName, List<Location> solidBlocks) {
         this.teamName = teamName;
@@ -29,6 +30,13 @@ public class BlimpData {
             max.setY(Math.max(max.getY(), l.getY()));
             max.setZ(Math.max(max.getZ(), l.getZ()));
         }
+
+        this.center = new Location(
+                min.getWorld(),
+                (min.getX() + max.getX()) / 2.0,
+                (min.getY() + max.getY()) / 2.0,
+                (min.getZ() + max.getZ()) / 2.0
+        );
 
         Vector axis = max.toVector().subtract(min.toVector()).normalize();
 

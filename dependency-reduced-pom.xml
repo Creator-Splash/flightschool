@@ -177,7 +177,7 @@
       <artifactId>CreatorSplashCore</artifactId>
       <version>1.0.0</version>
       <scope>system</scope>
-      <systemPath>C:\Users\test.test.com\IdeaProjects\flightschool-main/libs/CreatorSplashCore-1.0.0.jar</systemPath>
+      <systemPath>${project.basedir}/libs/CreatorSplashCore-1.0.0.jar</systemPath>
     </dependency>
   </dependencies>
   <properties>

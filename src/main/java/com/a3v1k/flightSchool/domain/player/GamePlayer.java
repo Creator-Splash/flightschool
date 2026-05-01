@@ -17,7 +17,7 @@ public class GamePlayer {
     @Getter @Setter
     private Role role;
     @Getter @Setter
-    private boolean lastStand = true;
+    private boolean lastStand = false;
     @Getter @Setter
     private boolean eliminated = false;
 
