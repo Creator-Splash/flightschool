@@ -2,6 +2,8 @@ package com.a3v1k.flightSchool.platform.paper;
 
 import com.a3v1k.flightSchool.application.scheduler.Scheduler;
 import com.a3v1k.flightSchool.platform.paper.command.CommandRegistrar;
+import com.a3v1k.flightSchool.platform.paper.command.FsAdminCommands;
+import com.a3v1k.flightSchool.platform.paper.command.FsCommands;
 import com.a3v1k.flightSchool.application.game.*;
 import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
 import com.a3v1k.flightSchool.platform.paper.game.PaperLobbyManager;
@@ -200,7 +202,9 @@ public class FlightSchool extends JavaPlugin {
 
     public void enableCommands() {
         try {
-
+            this.commandRegistrar = new CommandRegistrar(this);
+            this.commandRegistrar.registerAnnotated(new FsCommands(this));
+            this.commandRegistrar.registerAnnotated(new FsAdminCommands(this));
         } catch (Exception e) {
             getLogger().severe("Failed to initialize command registrar: " + e.getMessage());
             getServer().getPluginManager().disablePlugin(this);
