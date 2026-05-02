@@ -187,6 +187,15 @@ public class Vehicle {
         despawnTeamPlanes(plugin, team);
 
         plugin.getGameOrchestrator().explodeBlimp(teamName);
+
+        // Last-team-standing check: if at most one team still has alive turrets,
+        // end the match. triggerMatchEnd no-ops if state isn't IN_GAME.
+        long aliveCount = plugin.getGameManager().getTeams().values().stream()
+            .filter(plugin.getGameManager()::teamHasAliveTurret)
+            .count();
+        if (aliveCount <= 1) {
+            plugin.getGameOrchestrator().triggerMatchEnd();
+        }
     }
 
     private static void setTeamSpectator(Team team) {

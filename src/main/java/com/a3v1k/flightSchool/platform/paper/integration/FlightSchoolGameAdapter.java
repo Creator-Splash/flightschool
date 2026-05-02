@@ -23,15 +23,18 @@ public final class FlightSchoolGameAdapter implements GameAdapter {
 
     private static final long EVACUATION_DELAY_TICKS = 40L;
 
+    // Values are the Team `name` field (used by GameManager.getTeam) — NOT displayName.
+    // Slot order mirrors PointsExpansion.scores_name_* so the placeholder display and
+    // the event-mode team mapping agree.
     private static final Map<String, String> EVENT_TO_FS_TEAM = Map.of(
-        "orca", "a",
-        "seahorse", "b",
-        "turtle", "c",
-        "dolphin", "d",
-        "swordfish", "e",
-        "stingray", "f",
-        "jellyfish", "g",
-        "octopus", "h"
+        "orca",      "red",
+        "seahorse",  "yellow",
+        "turtle",    "green",
+        "dolphin",   "blue",
+        "stingray",  "dark_violet",
+        "jellyfish", "violet",
+        "swordfish", "dark_blue",
+        "octopus",   "orange"
     );
 
     private final FlightSchool plugin;

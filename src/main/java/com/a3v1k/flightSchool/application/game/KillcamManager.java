@@ -1,5 +1,6 @@
 package com.a3v1k.flightSchool.application.game;
 
+import com.a3v1k.flightSchool.application.scheduler.Scheduler;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import me.jumper251.replay.api.ReplayAPI;
 import me.jumper251.replay.api.ReplaySessionFinishEvent;
@@ -8,8 +9,6 @@ import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +20,7 @@ public final class KillcamManager implements Listener {
 
     private final Map<UUID, String> activeReplayNames = new HashMap<>();
     private final Map<UUID, String> pendingRespawns = new HashMap<>();
-    private final Map<UUID, BukkitTask> recordingTasks = new HashMap<>();
+    private final Map<UUID, Scheduler.Task> recordingTasks = new HashMap<>();
 
     private static final int WINDOW_SECONDS = 10;
 
@@ -41,7 +40,7 @@ public final class KillcamManager implements Listener {
         UUID uuid = player.getUniqueId();
         String replayName = "live_" + uuid;
 
-        BukkitTask existingTask = recordingTasks.remove(uuid);
+        Scheduler.Task existingTask = recordingTasks.remove(uuid);
         if (existingTask != null) {
             existingTask.cancel();
         }
@@ -56,19 +55,16 @@ public final class KillcamManager implements Listener {
         startNewRecording(player, replayName);
 
         // Restart recording every 10 seconds to simulate rolling buffer
-        BukkitTask recordingTask = new BukkitRunnable() {
-            @Override
-            public void run() {
-
+        Scheduler.Task recordingTask = plugin.getScheduler().runRepeating(t -> {
             if (!player.isOnline()) {
                 recordingTasks.remove(uuid);
-                cancel();
+                t.cancel();
                 return;
             }
 
             if (!activeReplayNames.containsKey(uuid)) {
                 recordingTasks.remove(uuid);
-                cancel();
+                t.cancel();
                 return;
             }
 
@@ -77,9 +73,7 @@ public final class KillcamManager implements Listener {
 
             // Start new one
             startNewRecording(player, replayName);
-
-            }
-        }.runTaskTimer(plugin, WINDOW_SECONDS * 20L, WINDOW_SECONDS * 20L);
+        }, WINDOW_SECONDS * 20L, WINDOW_SECONDS * 20L);
 
         recordingTasks.put(uuid, recordingTask);
     }
@@ -106,7 +100,7 @@ public final class KillcamManager implements Listener {
         pendingRespawns.put(uuid, teamName);
 
         // Small delay ensures replay file finishes saving
-        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+        plugin.getScheduler().runLater(() -> {
             ReplayAPI.getInstance().playReplay(replayName, deadPlayer);
         }, 10L);
     }
@@ -147,7 +141,7 @@ public final class KillcamManager implements Listener {
         }
 
         UUID uuid = player.getUniqueId();
-        BukkitTask recordingTask = recordingTasks.remove(uuid);
+        Scheduler.Task recordingTask = recordingTasks.remove(uuid);
         if (recordingTask != null) {
             recordingTask.cancel();
         }
@@ -171,7 +165,7 @@ public final class KillcamManager implements Listener {
             }
         }
 
-        for (BukkitTask recordingTask : recordingTasks.values()) {
+        for (Scheduler.Task recordingTask : recordingTasks.values()) {
             recordingTask.cancel();
         }
         recordingTasks.clear();

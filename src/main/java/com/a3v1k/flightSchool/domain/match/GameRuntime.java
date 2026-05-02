@@ -1,6 +1,6 @@
 package com.a3v1k.flightSchool.domain.match;
 
-import com.a3v1k.flightSchool.platform.paper.game.blimp.PaperBlimpHealthManager;
+import com.a3v1k.flightSchool.application.game.BlimpHealthManager;
 import com.a3v1k.flightSchool.application.game.ScoreManager;
 import com.a3v1k.flightSchool.domain.blimp.BlimpData;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
@@ -31,7 +31,7 @@ public class GameRuntime {
     @Setter
     private Map<Team, List<ActiveMob>> teamPlaneMaps = new HashMap<>();
     @Setter
-    private Map<String, PaperBlimpHealthManager> healthManagers = new HashMap<>();
+    private Map<String, BlimpHealthManager> healthManagers = new HashMap<>();
     @Setter
     private long gameStartedAt = -1L;
 

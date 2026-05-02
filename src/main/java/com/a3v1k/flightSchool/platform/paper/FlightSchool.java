@@ -89,7 +89,7 @@ public class FlightSchool extends JavaPlugin {
         this.gameManager = paperGameManager;
         this.gameOrchestrator = paperGameManager;
 
-        this.lobbyManager = new PaperLobbyManager();
+        this.lobbyManager = new PaperLobbyManager(this);
         this.teamManager = new TeamManager();
         this.teamVisualManager = new TeamVisualManager();
         this.configManager = new ConfigManager();

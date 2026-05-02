@@ -16,6 +16,7 @@ import com.sk89q.worldguard.WorldGuard;
 import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionContainer;
+import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.*;
@@ -24,20 +25,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public final class PaperLobbyManager implements LobbyManager {
 
     private final FlightSchool plugin;
-    private int countdown = 20;
-
-    public PaperLobbyManager() {
-        this.plugin = FlightSchool.getInstance();
-    }
 
     @Override
     public void startRoleSelection(List<UUID> playerIds) {
@@ -153,96 +150,88 @@ public final class PaperLobbyManager implements LobbyManager {
 
 
 
-        // Start the cinematic - uhhhh wtf is this
-        final int[] countdown = {0}; // TODO: Switch it back to 40
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                if (countdown[0] <= 0) {
-                    this.cancel();
+        // TODO: Switch it back to 40
+        final int totalSeconds = 0;
+        plugin.getScheduler().runRepeating(t -> {
+            int remaining = totalSeconds - t.elapsedTicks();
 
-                    startRoleSelection(playerIds);
-                }
-
-                // uhh
-                if (countdown[0] == 35) {
-                    Bukkit.dispatchCommand(
-                        new ArrayList<>(Bukkit.getOnlinePlayers()).getFirst(),
-                        "cinematic start flightmgr-demo all");
-
-                    for(Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendMessage(message);
-                    }
-                }
-
-                if (countdown[0] == 25) {
-
-                    for(Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendMessage(message1);
-                    }
-                }
-
-                if (countdown[0] == 15) {
-                    for(Player player : Bukkit.getOnlinePlayers()) {
-                        player.sendMessage(message2);
-                    }
-                }
-                countdown[0] -= 1;
+            if (remaining <= 0) {
+                t.cancel();
+                startRoleSelection(playerIds);
+                return;
             }
-        }.runTaskTimer(this.plugin, 0, 20);
+
+            if (remaining == 35) {
+                Bukkit.dispatchCommand(
+                    new ArrayList<>(Bukkit.getOnlinePlayers()).getFirst(),
+                    "cinematic start flightmgr-demo all");
+
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.sendMessage(message);
+                }
+            }
+
+            if (remaining == 25) {
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.sendMessage(message1);
+                }
+            }
+
+            if (remaining == 15) {
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    player.sendMessage(message2);
+                }
+            }
+        }, 0L, 20L);
     }
 
     private void assignRolesRandomly(List<Player> players) {
+        GameManager gm = plugin.getGameManager();
         for (Player player : players) {
-            GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player.getUniqueId());
-            if(gamePlayer == null) continue;
+            GamePlayer gamePlayer = gm.getGamePlayer(player.getUniqueId());
+            if (gamePlayer == null) continue;
+            if (gamePlayer.getRole() != null) continue;
 
-            if(gamePlayer.getRole() != null) continue;
-
-            // Review team numbers.
             Team team = gamePlayer.getTeam();
+            if (team == null) continue;
 
-            if(team == null) continue;
-
-            long cannonCount = this.plugin.getGameManager().getRoleCount(team, Role.CANNON_OPERATOR);
-            long planeCount = this.plugin.getGameManager().getRoleCount(team, Role.PLANE_PILOT);
-
-            if(!(String.valueOf(cannonCount).equals(String.valueOf(2)))) {
-                long allowedCannonCount = 2 - cannonCount;
-
-                this.plugin.getGameManager().assignRole(player.getUniqueId(), Role.CANNON_OPERATOR);
-            }
-
-            if(!(String.valueOf(planeCount).equals(String.valueOf(3)))) {
-                long allowedPlaneCount = 3 - planeCount;
-
-                this.plugin.getGameManager().assignRole(player.getUniqueId(), Role.PLANE_PILOT);
+            // Cannon-first: cannons are scarcer (2/team), so fill them before planes.
+            if (gm.canAssignRole(team, Role.CANNON_OPERATOR)) {
+                gm.assignRole(player.getUniqueId(), Role.CANNON_OPERATOR);
+            } else if (gm.canAssignRole(team, Role.PLANE_PILOT)) {
+                gm.assignRole(player.getUniqueId(), Role.PLANE_PILOT);
+            } else {
+                plugin.getLogger().warning("[Role Assignment] " + player.getName()
+                    + " could not be assigned a role — team " + team.getName() + " is full.");
             }
         }
     }
 
     private void assignTeams(List<Player> allPlayers) {
-        GameManager gm = this.plugin.getGameManager();
-        // Shuffle teams, assign first 5 to shuffled, then so on
-        List<Team> shuffledTeams = List.copyOf(gm.getTeams().values());
-        for (int i = 0; i < allPlayers.size(); i++) {
-            Team team = shuffledTeams.get(i % shuffledTeams.size());
-            GamePlayer gamePlayer = gm.getGamePlayer(allPlayers.get(i).getUniqueId());
-            if(gamePlayer.getTeam() != null) team = gamePlayer.getTeam();
-            gm.assignPlayerToTeam(allPlayers.get(i).getUniqueId(), team);
+        GameManager gm = plugin.getGameManager();
 
-            this.plugin.getLogger().info("[Team Assignment] "
-                + allPlayers.get(i).getName() + " has been assigned to " + team.getName());
-        }
+        List<Team> shuffledTeams = new ArrayList<>(gm.getTeams().values());
+        Collections.shuffle(shuffledTeams);
 
-        // See how many empty teams
-        int emptyTeams = 0;
-        for(Team team : gm.getTeams().values()) {
-            if(team.getMembers().isEmpty()) {
-                emptyTeams++;
+        int unassignedIndex = 0;
+        for (Player player : allPlayers) {
+            GamePlayer gamePlayer = gm.getGamePlayer(player.getUniqueId());
+            if (gamePlayer == null) continue;
+
+            Team team;
+            if (gamePlayer.getTeam() != null) {
+                // Preserve existing assignment (e.g., seeded by FlightSchoolGameAdapter
+                // or restored by resetRoundState's snapshot). Only newcomers consume the pool.
+                team = gamePlayer.getTeam();
+            } else {
+                team = shuffledTeams.get(unassignedIndex % shuffledTeams.size());
+                unassignedIndex++;
             }
+
+            gm.assignPlayerToTeam(player.getUniqueId(), team);
+            plugin.getLogger().info("[Team Assignment] "
+                + player.getName() + " has been assigned to " + team.getName());
         }
-        int totalTeams = shuffledTeams.size() - emptyTeams;
     }
 
     private void teleportTeamsToRegions(List<Player> allPlayers) {

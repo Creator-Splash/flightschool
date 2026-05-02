@@ -11,6 +11,16 @@ public interface GameOrchestrator {
 
     void resetRoundState();
 
+    /**
+     * End the current match: cancels the match-end timer, determines a winner,
+     * announces it, then resets round state after a short delay.
+     *
+     * <p>Triggered either by the match timer expiring or by last-team-standing
+     * (e.g. when a team's elimination leaves only one alive). No-ops if the game
+     * is not currently {@code IN_GAME}.</p>
+     */
+    void triggerMatchEnd();
+
     void explodeBlimp(String teamName);
 
     void spawnDelayedPlane(

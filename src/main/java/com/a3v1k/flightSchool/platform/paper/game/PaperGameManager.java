@@ -38,6 +38,9 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
     private static final int ROLE_LIMIT_CANNON = 2;
     private static final int ROLE_LIMIT_PLANE = 3;
 
+    /** Delay between announcing the winner and resetting round state, in ticks. */
+    private static final long MATCH_END_RESET_DELAY_TICKS = 100L;
+
     private final FlightSchool plugin;
     private final Scheduler scheduler;
     private final Logger logger;
@@ -55,6 +58,7 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
     private GameRuntime runtime;
     private AirspaceManager airspaceManager;
     private PlaneCollisionManager planeCollisionManager;
+    private Scheduler.Task matchEndTask;
 
     public PaperGameManager(
         @NotNull final FlightSchool plugin,
@@ -286,12 +290,32 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
 
         planeSpawnService.spawnCannons(cannonLocations);
         planeSpawnService.spawnPlanes(planeLocations);
+
+        scheduleMatchEnd();
+    }
+
+    private void scheduleMatchEnd() {
+        if (matchEndTask != null) {
+            matchEndTask.cancel();
+        }
+        int matchDuration = plugin.getConfigManager().getMatchDuration();
+        matchEndTask = scheduler.runLater(this::triggerMatchEnd, matchDuration * 20L);
     }
 
     /* == Orchestrator - Reset == */
 
     @Override
     public void resetRoundState() {
+        // Snapshot player→team assignments before destruction so we can restore them
+        // after the fresh runtime is built. Without this, every reset re-shuffles teams
+        // (T7 bug). assignTeams in PaperLobbyManager preserves any team already set, so
+        // restoring here is enough to keep players on their teams across stop→start.
+        Map<UUID, String> teamSnapshot = new HashMap<>();
+        for (Map.Entry<UUID, GamePlayer> entry : runtime.getPlayers().entrySet()) {
+            Team t = entry.getValue().getTeam();
+            if (t != null) teamSnapshot.put(entry.getKey(), t.getName());
+        }
+
         if (airspaceManager != null) {
             airspaceManager.shutdown();
             airspaceManager = null;
@@ -300,6 +324,11 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
         if (planeCollisionManager != null) {
             planeCollisionManager.stop();
             planeCollisionManager = null;
+        }
+
+        if (matchEndTask != null) {
+            matchEndTask.cancel();
+            matchEndTask = null;
         }
 
         blimpHealthTasks.values().forEach(Scheduler.Task::cancel);
@@ -325,6 +354,18 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
         freshRuntime.setGameStartedAt(-1L);
         runtime = freshRuntime;
 
+        // Restore team assignments after the fresh runtime is built. Must happen after
+        // Team::resetRoundState (which clears members) and after fresh GamePlayer instances
+        // are created — otherwise either step would stomp the restoration.
+        for (Map.Entry<UUID, String> entry : teamSnapshot.entrySet()) {
+            Team team = freshRuntime.getTeam(entry.getValue());
+            if (team == null) continue;
+            GamePlayer gp = freshRuntime.getGamePlayer(entry.getKey());
+            if (gp == null) continue;
+            gp.setTeam(team);
+            team.addMember(entry.getKey());
+        }
+
         teamPlaneMaps.clear();
         healthManagers.clear();
         blimpHealthTasks.clear();
@@ -346,6 +387,77 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
         }
 
         explosionService.explode(blimp, team);
+    }
+
+    /* == Orchestrator - triggerMatchEnd == */
+
+    @Override
+    public void triggerMatchEnd() {
+        if (runtime.getGameState() != GameState.IN_GAME) return;
+
+        if (matchEndTask != null) {
+            matchEndTask.cancel();
+            matchEndTask = null;
+        }
+
+        Team winner = determineWinner();
+        announceWinner(winner);
+
+        scheduler.runLater(this::resetRoundState, MATCH_END_RESET_DELAY_TICKS);
+    }
+
+    private Team determineWinner() {
+        List<Team> aliveTeams = runtime.getTeams().values().stream()
+            .filter(this::teamHasAliveTurret)
+            .toList();
+
+        // Last team standing — fast path.
+        if (aliveTeams.size() == 1) return aliveTeams.getFirst();
+
+        // Multi-team timer expiry, or zero-alive (everyone died simultaneously).
+        // Tiebreaker: highest blimp HP, then highest team score (kill-count proxy).
+        List<Team> candidates = aliveTeams.isEmpty()
+            ? new ArrayList<>(runtime.getTeams().values())
+            : aliveTeams;
+
+        return candidates.stream()
+            .max(Comparator.<Team>comparingDouble(t -> {
+                BlimpHealthManager hm = healthManagers.get(t.getName());
+                return hm != null ? hm.getHealth() : 0.0;
+            }).thenComparingInt(t -> runtime.getScoreManager().getScore(t)))
+            .orElse(null);
+    }
+
+    private void announceWinner(Team winner) {
+        Component titleText;
+        Component subtitle;
+
+        if (winner == null) {
+            titleText = Component.text("Match Over", NamedTextColor.GOLD);
+            subtitle = Component.text("No winner determined", NamedTextColor.GRAY);
+        } else {
+            titleText = Component.text("WINNER", NamedTextColor.GOLD);
+            subtitle = Component.text(winner.getName().toUpperCase(), NamedTextColor.GREEN);
+        }
+
+        Title adventureTitle = Title.title(
+            titleText,
+            subtitle,
+            Title.Times.times(
+                Duration.ofMillis(500),
+                Duration.ofSeconds(4),
+                Duration.ofMillis(1000)
+            )
+        );
+
+        Component chatMessage = winner == null
+            ? Component.text("Match ended — no winner determined.", NamedTextColor.GOLD)
+            : Component.text("Match ended — winner: " + winner.getName(), NamedTextColor.GOLD);
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.showTitle(adventureTitle);
+            p.sendMessage(chatMessage);
+        }
     }
 
     /* == Orchestrator - spawnDelayedPlane == */
