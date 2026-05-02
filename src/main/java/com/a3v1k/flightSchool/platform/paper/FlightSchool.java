@@ -1,8 +1,7 @@
 package com.a3v1k.flightSchool.platform.paper;
 
 import com.a3v1k.flightSchool.application.scheduler.Scheduler;
-import com.a3v1k.flightSchool.platform.paper.command.FlightSchoolCommand;
-import com.a3v1k.flightSchool.platform.paper.command.TempCommands;
+import com.a3v1k.flightSchool.platform.paper.command.CommandRegistrar;
 import com.a3v1k.flightSchool.application.game.*;
 import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
 import com.a3v1k.flightSchool.platform.paper.game.PaperLobbyManager;
@@ -43,6 +42,8 @@ public class FlightSchool extends JavaPlugin {
     @Getter private Scheduler scheduler;
     @Getter private GameManager gameManager;
     @Getter private GameOrchestrator gameOrchestrator;
+
+    @Getter private CommandRegistrar commandRegistrar;
 
     private TeamManager teamManager;
     private TeamVisualManager teamVisualManager;
@@ -198,8 +199,12 @@ public class FlightSchool extends JavaPlugin {
     }
 
     public void enableCommands() {
-        getCommand("fsh").setExecutor(new FlightSchoolCommand(this));
-        getCommand("fsh-test").setExecutor(new TempCommands(this));
+        try {
+
+        } catch (Exception e) {
+            getLogger().severe("Failed to initialize command registrar: " + e.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+        }
     }
 
     public void enableEvents() {

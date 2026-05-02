@@ -5,25 +5,19 @@ import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.player.Role;
 import com.a3v1k.flightSchool.domain.team.Team;
-import com.ticxo.modelengine.api.ModelEngineAPI;
-import com.ticxo.modelengine.api.animation.handler.AnimationHandler;
-import com.ticxo.modelengine.api.model.ActiveModel;
-import com.ticxo.modelengine.api.model.ModeledEntity;
-import com.ticxo.modelengine.api.mount.controller.MountControllerTypes;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Pig;
 import org.bukkit.entity.Player;
 
 import java.util.logging.Level;
 
-public class FlightSchoolCommand implements CommandExecutor {
+public class FlightSchoolCommandOld implements CommandExecutor {
 
     private final FlightSchool plugin;
 
-    public FlightSchoolCommand(FlightSchool plugin) {
+    public FlightSchoolCommandOld(FlightSchool plugin) {
         this.plugin = plugin;
     }
 
