@@ -83,6 +83,8 @@ tasks {
 
     shadowJar {
         archiveClassifier.set("")
+        archiveBaseName.set("FlightSchool")
+        archiveVersion.set("")
         minimize()
     }
 
@@ -107,6 +109,8 @@ paper {
     main = "com.a3v1k.flightSchool.FlightSchool"
     generateLibrariesJson = true
 
+    loader = "com.a3v1k.flightSchool.platform.paper.bootstrap.LibLoader"
+    
     serverDependencies {
         register("CreatorSplashCore") {
             required = true
