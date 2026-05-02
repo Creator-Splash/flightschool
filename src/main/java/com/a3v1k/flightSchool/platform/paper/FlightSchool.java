@@ -6,6 +6,7 @@ import com.a3v1k.flightSchool.platform.paper.command.FsAdminCommands;
 import com.a3v1k.flightSchool.platform.paper.command.FsCommands;
 import com.a3v1k.flightSchool.application.game.*;
 import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
+import com.a3v1k.flightSchool.platform.paper.game.PaperKillcamManager;
 import com.a3v1k.flightSchool.platform.paper.game.PaperLobbyManager;
 import com.a3v1k.flightSchool.platform.paper.integration.FlightSchoolGameAdapter;
 import com.a3v1k.flightSchool.platform.paper.integration.scheduler.PaperSchedulerAdapter;
@@ -27,6 +28,7 @@ import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
 
@@ -93,7 +95,7 @@ public class FlightSchool extends JavaPlugin {
         this.teamManager = new TeamManager();
         this.teamVisualManager = new TeamVisualManager();
         this.configManager = new ConfigManager();
-        this.killcamManager = new KillcamManager();
+        this.killcamManager = new PaperKillcamManager(this, this.scheduler);
     }
 
     // TODO
@@ -215,7 +217,7 @@ public class FlightSchool extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         this.getServer().getPluginManager().registerEvents(new GameListener(this), this);
         this.getServer().getPluginManager().registerEvents(new TeamListener(this), this);
-        this.getServer().getPluginManager().registerEvents(this.killcamManager, this);
+        this.getServer().getPluginManager().registerEvents((Listener) this.killcamManager, this);
     }
 
     private void startLocatorBarGuard() {

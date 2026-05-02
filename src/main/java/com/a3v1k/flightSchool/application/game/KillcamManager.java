@@ -1,174 +1,39 @@
 package com.a3v1k.flightSchool.application.game;
 
-import com.a3v1k.flightSchool.application.scheduler.Scheduler;
-import com.a3v1k.flightSchool.platform.paper.FlightSchool;
-import me.jumper251.replay.api.ReplayAPI;
-import me.jumper251.replay.api.ReplaySessionFinishEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+/**
+ * Orchestrates rolling player recordings and killcam playback.
+ *
+ * <p>Implementations record a continuous rolling buffer per player while alive
+ * and play back the most recent window when a player dies. The Paper implementation
+ * lives in {@code platform/paper/game/PaperKillcamManager} and integrates with the
+ * AdvancedReplay API.</p>
+ */
+public interface KillcamManager {
 
-public final class KillcamManager implements Listener {
-
-    private final FlightSchool plugin;
-
-    private final Map<UUID, String> activeReplayNames = new HashMap<>();
-    private final Map<UUID, String> pendingRespawns = new HashMap<>();
-    private final Map<UUID, Scheduler.Task> recordingTasks = new HashMap<>();
-
-    private static final int WINDOW_SECONDS = 10;
-
-    public KillcamManager() {
-        this.plugin = FlightSchool.getInstance();
-        Bukkit.getPluginManager().registerEvents(this, plugin);
-    }
-
-    /*
-     * Start continuous rolling recording for player
+    /**
+     * Start a rolling recording for the given player. Cancels and restarts any
+     * existing recording for the same player.
      */
-    public void startRecording(Player player) {
-        if (player == null || !player.isOnline()) {
-            return;
-        }
+    void startRecording(Player player);
 
-        UUID uuid = player.getUniqueId();
-        String replayName = "live_" + uuid;
-
-        Scheduler.Task existingTask = recordingTasks.remove(uuid);
-        if (existingTask != null) {
-            existingTask.cancel();
-        }
-
-        String previousReplayName = activeReplayNames.remove(uuid);
-        if (previousReplayName != null) {
-            ReplayAPI.getInstance().stopReplay(previousReplayName, false);
-        }
-
-        activeReplayNames.put(uuid, replayName);
-
-        startNewRecording(player, replayName);
-
-        // Restart recording every 10 seconds to simulate rolling buffer
-        Scheduler.Task recordingTask = plugin.getScheduler().runRepeating(t -> {
-            if (!player.isOnline()) {
-                recordingTasks.remove(uuid);
-                t.cancel();
-                return;
-            }
-
-            if (!activeReplayNames.containsKey(uuid)) {
-                recordingTasks.remove(uuid);
-                t.cancel();
-                return;
-            }
-
-            // Stop old recording (save)
-            ReplayAPI.getInstance().stopReplay(replayName, false, true);
-
-            // Start new one
-            startNewRecording(player, replayName);
-        }, WINDOW_SECONDS * 20L, WINDOW_SECONDS * 20L);
-
-        recordingTasks.put(uuid, recordingTask);
-    }
-
-    private void startNewRecording(Player player, String replayName) {
-        ReplayAPI.getInstance().recordReplay(replayName, player);
-    }
-
-    /*
-     * Called on plane death
+    /**
+     * Stop and discard the rolling recording for the given player. No-op if
+     * no recording is active for the player.
      */
-    public void playKillcam(Player deadPlayer, String teamName) {
+    void stopRecording(Player player);
 
-        UUID uuid = deadPlayer.getUniqueId();
-        String replayName = activeReplayNames.get(uuid);
-
-        if (replayName == null) return;
-
-        // Stop recording and save last window
-        ReplayAPI.getInstance().stopReplay(replayName, true, true);
-
-        deadPlayer.setGameMode(GameMode.SPECTATOR);
-
-        pendingRespawns.put(uuid, teamName);
-
-        // Small delay ensures replay file finishes saving
-        plugin.getScheduler().runLater(() -> {
-            ReplayAPI.getInstance().playReplay(replayName, deadPlayer);
-        }, 10L);
-    }
-
-    /*
-     * When replay ends → respawn plane and resume recording
+    /**
+     * Save the player's current rolling window and play it back as a killcam.
+     * The player is placed in spectator mode for the duration of the playback;
+     * the implementation handles respawn after playback completes.
      */
-    @EventHandler
-    public void onReplayFinished(ReplaySessionFinishEvent event) {
+    void playKillcam(Player deadPlayer, String teamName);
 
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-
-        if (!pendingRespawns.containsKey(uuid))
-            return;
-
-        String teamName = pendingRespawns.remove(uuid);
-
-        player.setGameMode(GameMode.SURVIVAL);
-
-        plugin.getGameOrchestrator().spawnDelayedPlane(
-            teamName,
-            plugin.getConfigManager().getPlaneLocations().get(teamName).getFirst(),
-            player,
-            0
-        );
-
-        // Restart rolling recording
-        startRecording(player);
-    }
-
-    /*
-     * Optional cleanup
+    /**
+     * Cancel all active recordings and clear all pending respawns. Intended for
+     * round resets and plugin shutdown.
      */
-    public void stopRecording(Player player) {
-        if (player == null) {
-            return;
-        }
-
-        UUID uuid = player.getUniqueId();
-        Scheduler.Task recordingTask = recordingTasks.remove(uuid);
-        if (recordingTask != null) {
-            recordingTask.cancel();
-        }
-        String replayName = activeReplayNames.remove(uuid);
-
-        if (replayName != null) {
-            ReplayAPI.getInstance().stopReplay(replayName, false);
-        }
-    }
-
-    public void reset() {
-        for (UUID uuid : activeReplayNames.keySet().stream().toList()) {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                stopRecording(player);
-            } else {
-                String replayName = activeReplayNames.remove(uuid);
-                if (replayName != null) {
-                    ReplayAPI.getInstance().stopReplay(replayName, false);
-                }
-            }
-        }
-
-        for (Scheduler.Task recordingTask : recordingTasks.values()) {
-            recordingTask.cancel();
-        }
-        recordingTasks.clear();
-        pendingRespawns.clear();
-    }
+    void reset();
 }
