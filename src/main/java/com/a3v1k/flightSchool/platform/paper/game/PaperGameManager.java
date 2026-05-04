@@ -23,6 +23,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -190,6 +191,9 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
         return team.getMembers().stream()
             .map(Bukkit::getPlayer)
             .filter(p -> p != null
+                && p.isOnline()
+                && (p.getGameMode() == GameMode.ADVENTURE
+                    || p.getGameMode() == GameMode.SURVIVAL)
                 && getGamePlayer(p.getUniqueId()) != null
                 && getGamePlayer(p.getUniqueId()).getTeam() == team
                 && getGamePlayer(p.getUniqueId()).getRole() == Role.CANNON_OPERATOR)
@@ -201,6 +205,9 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
         return team.getMembers().stream()
             .map(Bukkit::getPlayer)
             .filter(p -> p != null
+                && p.isOnline()
+                && (p.getGameMode() == GameMode.ADVENTURE
+                    || p.getGameMode() == GameMode.SURVIVAL)
                 && getGamePlayer(p.getUniqueId()) != null
                 && getGamePlayer(p.getUniqueId()).getTeam() == team
                 && getGamePlayer(p.getUniqueId()).getRole() == Role.PLANE_PILOT)
@@ -269,6 +276,22 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
 
     @Override
     public void startGame(List<Player> playerList) {
+        // Defensive filter — caller is expected to have filtered already, but we log
+        // and drop any players who are offline or in a non-playable gamemode before
+        // processing. The load-bearing filter is in getCannonMembers/getPlaneMembers
+        // (which feed PlaneSpawnService); this is just the upstream safety net.
+        List<Player> activePlayers = playerList.stream()
+            .filter(p -> p != null
+                && p.isOnline()
+                && (p.getGameMode() == GameMode.ADVENTURE
+                    || p.getGameMode() == GameMode.SURVIVAL))
+            .toList();
+        if (activePlayers.size() != playerList.size()) {
+            logger.warning("[startGame] Filtered "
+                + (playerList.size() - activePlayers.size())
+                + " inactive player(s) from incoming list (offline, spectating, or creative).");
+        }
+
         setGameState(GameState.IN_GAME);
         runtime.setGameStartedAt(System.currentTimeMillis());
         plugin.enableLocatorBar();

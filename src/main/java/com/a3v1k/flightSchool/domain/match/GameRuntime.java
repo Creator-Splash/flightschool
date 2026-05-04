@@ -59,8 +59,23 @@ public class GameRuntime {
         teams.put(team.getName(), team);
     }
 
+    /**
+     * Resolves a Team by either its internal {@code name} field (canonical, used
+     * everywhere internally) or its {@code displayName} field (what user-facing
+     * suggesters and chat now show). The internal-name lookup is checked first; if
+     * no match, falls back to a case-insensitive scan over displayNames. Names are
+     * unique by construction so the scan is unambiguous.
+     */
     public Team getTeam(String name) {
-        return teams.get(name);
+        if (name == null) return null;
+        Team direct = teams.get(name);
+        if (direct != null) return direct;
+        for (Team t : teams.values()) {
+            if (t.getDisplayName() != null && t.getDisplayName().equalsIgnoreCase(name)) {
+                return t;
+            }
+        }
+        return null;
     }
 
     public void assignRole(UUID playerId, Role role) {

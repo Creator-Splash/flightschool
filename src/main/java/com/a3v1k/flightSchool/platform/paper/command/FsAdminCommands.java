@@ -4,6 +4,7 @@ import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
+import com.a3v1k.flightSchool.platform.paper.util.ColorAdapter;
 import io.lumine.mythic.api.mobs.MythicMob;
 import io.lumine.mythic.bukkit.BukkitAdapter;
 import io.lumine.mythic.bukkit.MythicBukkit;
@@ -76,10 +77,20 @@ public final class FsAdminCommands implements CommandHandler {
         Player player,
         @Argument(value = "team", suggestions = "fsh-team-names") String teamName
     ) {
+        Team team = plugin.getGameManager().getTeam(teamName);
+        if (team == null) {
+            player.sendMessage(Component.text("Team " + teamName + " does not exist.",
+                NamedTextColor.RED));
+            return;
+        }
+
         Location location = player.getLocation();
-        plugin.getConfigManager().addCannonLocation(teamName, location);
+        // Save under canonical internal name so PlaneSpawnService.spawnCannons (which
+        // does gameManager.getTeam(entry.getKey())) resolves it correctly even when
+        // the user typed a displayName.
+        plugin.getConfigManager().addCannonLocation(team.getName(), location);
         player.sendMessage(Component.text(
-            "Set successfully — cannon for team " + teamName,
+            "Set successfully — cannon for team " + team.getDisplayName(),
             NamedTextColor.GREEN));
     }
 
@@ -89,10 +100,18 @@ public final class FsAdminCommands implements CommandHandler {
         Player player,
         @Argument(value = "team", suggestions = "fsh-team-names") String teamName
     ) {
+        Team team = plugin.getGameManager().getTeam(teamName);
+        if (team == null) {
+            player.sendMessage(Component.text("Team " + teamName + " does not exist.",
+                NamedTextColor.RED));
+            return;
+        }
+
         Location location = player.getLocation();
-        plugin.getConfigManager().addPlaneLocation(teamName, location);
+        // Save under canonical internal name (see set-cannon for rationale).
+        plugin.getConfigManager().addPlaneLocation(team.getName(), location);
         player.sendMessage(Component.text(
-            "Set successfully — plane for team " + teamName,
+            "Set successfully — plane for team " + team.getDisplayName(),
             NamedTextColor.GREEN));
     }
 
@@ -119,9 +138,9 @@ public final class FsAdminCommands implements CommandHandler {
         }
 
         plugin.getGameManager().assignPlayerToTeam(target.getUniqueId(), team);
-        sender.sendMessage(Component.text(
-            "You've set " + target.getName() + " in the " + team.getName() + " team.",
-            NamedTextColor.GREEN));
+        sender.sendMessage(Component.text("You've set " + target.getName() + " in the ", NamedTextColor.GREEN)
+            .append(Component.text(team.getDisplayName(), ColorAdapter.toAdventureColor(team.getColor())))
+            .append(Component.text(" team.", NamedTextColor.GREEN)));
     }
 
     /* == Debug subtree == */
@@ -150,9 +169,8 @@ public final class FsAdminCommands implements CommandHandler {
 
         Location spawnLoc = locs.getFirst();
         plugin.getGameOrchestrator().spawnDelayedPlane(key, spawnLoc, target, 0);
-        sender.sendMessage(Component.text(
-                "Plane spawned for " + target.getName() + " on team " + key,
-                NamedTextColor.GREEN));
+        sender.sendMessage(Component.text("Plane spawned for " + target.getName() + " on team ", NamedTextColor.GREEN)
+            .append(Component.text(team.getDisplayName(), ColorAdapter.toAdventureColor(team.getColor()))));
     }
 
     @Command("debug cannons")
@@ -246,9 +264,9 @@ public final class FsAdminCommands implements CommandHandler {
         }
 
         plugin.getTeamVisualManager().applyTabPluginStyle(player, team);
-        player.sendMessage(Component.text(
-            "Applied TAB icon test for team " + team.getName() + ".",
-            NamedTextColor.GREEN));
+        player.sendMessage(Component.text("Applied TAB icon test for team ", NamedTextColor.GREEN)
+            .append(Component.text(team.getDisplayName(), ColorAdapter.toAdventureColor(team.getColor())))
+            .append(Component.text(".", NamedTextColor.GREEN)));
     }
 
     @Command("debug tabreset")
@@ -267,7 +285,7 @@ public final class FsAdminCommands implements CommandHandler {
     @Suggestions("fsh-team-names")
     public List<String> suggestTeams(CommandContext<CommandSender> ctx) {
         return plugin.getGameManager().getTeams().values().stream()
-            .map(Team::getName)
+            .map(Team::getDisplayName)
             .toList();
     }
 

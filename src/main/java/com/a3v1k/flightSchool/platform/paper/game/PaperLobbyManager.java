@@ -98,8 +98,19 @@ public final class PaperLobbyManager implements LobbyManager {
             if (bossbarManager.isFinished()) {
                 t.cancel();
                 bossbarTask.cancel();
-                assignRolesRandomly(players);
-                plugin.getGameOrchestrator().startGame(players);
+
+                // Re-filter — `players` was captured at role-selection start. By the time
+                // the countdown ends, some may have logged off or died into spectator.
+                // Positive whitelist: only ADVENTURE or SURVIVAL count as game-ready.
+                List<Player> activePlayers = players.stream()
+                    .filter(p -> p != null
+                        && p.isOnline()
+                        && (p.getGameMode() == GameMode.ADVENTURE
+                            || p.getGameMode() == GameMode.SURVIVAL))
+                    .toList();
+
+                assignRolesRandomly(activePlayers);
+                plugin.getGameOrchestrator().startGame(activePlayers);
             }
         }, 0L, 1L);
     }
