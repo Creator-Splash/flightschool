@@ -100,14 +100,14 @@ public class FlightSchool extends JavaPlugin {
 
     // TODO
     private void initializeTeams() {
-        this.gameManager.addTeam(new Team("a", "red", Color.RED, "red_spawn"));
-        this.gameManager.addTeam(new Team("b", "yellow", Color.YELLOW, "yellow_spawn"));
-        this.gameManager.addTeam(new Team("c", "green", Color.GREEN, "green_spawn"));
-        this.gameManager.addTeam(new Team("d", "blue", Color.TEAL, "blue_spawn"));
-        this.gameManager.addTeam(new Team("e", "dark_violet", Color.FUCHSIA, "darkviolet_spawn"));
-        this.gameManager.addTeam(new Team("f", "violet", Color.PURPLE, "violet_spawn"));
-        this.gameManager.addTeam(new Team("g", "dark_blue", Color.BLUE, "darkblue_spawn"));
-        this.gameManager.addTeam(new Team("h", "orange", Color.ORANGE, "orange_spawn"));
+        this.gameManager.addTeam(new Team("Orca", "red", Color.RED, "red_spawn"));
+        this.gameManager.addTeam(new Team("Seahorse", "yellow", Color.YELLOW, "yellow_spawn"));
+        this.gameManager.addTeam(new Team("Turtle", "green", Color.GREEN, "green_spawn"));
+        this.gameManager.addTeam(new Team("Dolphin", "blue", Color.TEAL, "blue_spawn"));
+        this.gameManager.addTeam(new Team("Stingray", "dark_violet", Color.FUCHSIA, "darkviolet_spawn"));
+        this.gameManager.addTeam(new Team("Jellyfish", "violet", Color.PURPLE, "violet_spawn"));
+        this.gameManager.addTeam(new Team("Swordfish", "dark_blue", Color.BLUE, "darkblue_spawn"));
+        this.gameManager.addTeam(new Team("Octopus", "orange", Color.ORANGE, "orange_spawn"));
 
         getLogger().info("Teams initialized.");
     }

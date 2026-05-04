@@ -43,9 +43,16 @@ public class GameRuntime {
         players.remove(playerId);
     }
 
+    /**
+     * Returns the {@link GamePlayer} for the given UUID, or {@code null} if no
+     * player has been registered. Use {@link #addPlayer(UUID)} to register a
+     * player on first access. Does NOT auto-create — see commit history for
+     * why: a fabricated player has {@code eliminated=false}, which masked
+     * elimination state when disconnected players were still listed in
+     * {@link com.a3v1k.flightSchool.domain.team.Team#getMembers()}.
+     */
     public GamePlayer getGamePlayer(@Nullable UUID playerId) {
-        return playerId == null ? null : players.computeIfAbsent(playerId, k ->
-            new GamePlayer(playerId));
+        return playerId == null ? null : players.get(playerId);
     }
 
     public void addTeam(Team team) {

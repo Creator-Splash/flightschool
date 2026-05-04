@@ -21,6 +21,17 @@ public interface GameOrchestrator {
      */
     void triggerMatchEnd();
 
+    /**
+     * Count teams that still have at least one non-eliminated player and call
+     * {@link #triggerMatchEnd()} if at most one such team remains.
+     *
+     * <p>Should be called after any event that can permanently remove a player from
+     * play — turret death, blocked plane respawn, team elimination — so the match
+     * ends as soon as a single team is left standing rather than waiting for the
+     * timer.</p>
+     */
+    void checkLastTeamStanding();
+
     void explodeBlimp(String teamName);
 
     void spawnDelayedPlane(

@@ -110,7 +110,7 @@ paper {
     generateLibrariesJson = true
 
     loader = "com.a3v1k.flightSchool.platform.paper.bootstrap.LibLoader"
-    
+
     serverDependencies {
         register("CreatorSplashCore") {
             required = true

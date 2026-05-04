@@ -86,6 +86,15 @@ public final class PaperLobbyManager implements LobbyManager {
         plugin.getGameManager().setGameStartedAt(System.currentTimeMillis());
 
         plugin.getScheduler().runRepeating(t -> {
+            int onlineCount = Bukkit.getOnlinePlayers().size();
+            int minPlayers = plugin.getConfigManager().getMinPlayers();
+            if (onlineCount < minPlayers) {
+                t.cancel();
+                bossbarTask.cancel();
+                cancelGameForInsufficientPlayers(minPlayers);
+                return;
+            }
+
             if (bossbarManager.isFinished()) {
                 t.cancel();
                 bossbarTask.cancel();
@@ -93,6 +102,27 @@ public final class PaperLobbyManager implements LobbyManager {
                 plugin.getGameOrchestrator().startGame(players);
             }
         }, 0L, 1L);
+    }
+
+    private void cancelGameForInsufficientPlayers(int minPlayers) {
+        Component cancelMessage = Component.text(
+            "Game cancelled — at least " + minPlayers + " players are required to start.",
+            NamedTextColor.RED);
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            player.sendMessage(cancelMessage);
+        }
+
+        plugin.getLogger().info("[Lobby] Role-selection cancelled — only "
+            + Bukkit.getOnlinePlayers().size() + " online, need " + minPlayers + ".");
+
+        // resetRoundState handles state machine + scheduled-task cleanup and (per the
+        // T7 fix) preserves team assignments across the reset.
+        plugin.getGameOrchestrator().resetRoundState();
+
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            plugin.resetPlayerToLobby(player, false);
+        }
     }
 
     @Override
@@ -266,7 +296,8 @@ public final class PaperLobbyManager implements LobbyManager {
             // Teleport all members of this team
             for (Player member : allPlayers) {
                 if (member == null || !member.isOnline()) continue;
-                if(gm.getGamePlayer(member.getUniqueId()).getTeam() != team) continue;
+                GamePlayer memberGp = gm.getGamePlayer(member.getUniqueId());
+                if (memberGp == null || memberGp.getTeam() != team) continue;
                 member.teleport(centerLoc);
             }
         }

@@ -1,6 +1,7 @@
 package com.a3v1k.flightSchool.application.game;
 
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
+import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
 import org.bukkit.entity.Player;
 
@@ -20,7 +21,9 @@ public final class ScoreManager {
 
     public void addScore(Player player, int score) {
         playerScores.put(player.getUniqueId(), getScore(player) + score);
-        Team team = plugin.getGameManager().getGamePlayer(player.getUniqueId()).getTeam();
+        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
+        if (gamePlayer == null) return;
+        Team team = gamePlayer.getTeam();
         if (team != null) {
             addScore(team, score);
         }

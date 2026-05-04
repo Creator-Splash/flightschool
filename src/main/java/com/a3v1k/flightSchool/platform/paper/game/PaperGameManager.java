@@ -59,6 +59,14 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
     private AirspaceManager airspaceManager;
     private PlaneCollisionManager planeCollisionManager;
     private Scheduler.Task matchEndTask;
+    /**
+     * Idempotency latch for {@link #triggerMatchEnd()}. Set to true on the first
+     * call and reset to false at the start of {@link #resetRoundState()}.
+     * Without this, multiple trigger paths firing inside the
+     * {@link #MATCH_END_RESET_DELAY_TICKS} window (state stays IN_GAME until
+     * reset runs) would re-announce the winner and stack reset tasks.
+     */
+    private boolean matchEnding = false;
 
     public PaperGameManager(
         @NotNull final FlightSchool plugin,
@@ -306,6 +314,9 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
 
     @Override
     public void resetRoundState() {
+        // Clear match-end latch first so a new round can be ended again.
+        matchEnding = false;
+
         // Snapshot player→team assignments before destruction so we can restore them
         // after the fresh runtime is built. Without this, every reset re-shuffles teams
         // (T7 bug). assignTeams in PaperLobbyManager preserves any team already set, so
@@ -394,6 +405,8 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
     @Override
     public void triggerMatchEnd() {
         if (runtime.getGameState() != GameState.IN_GAME) return;
+        if (matchEnding) return;
+        matchEnding = true;
 
         if (matchEndTask != null) {
             matchEndTask.cancel();
@@ -403,7 +416,35 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
         Team winner = determineWinner();
         announceWinner(winner);
 
-        scheduler.runLater(this::resetRoundState, MATCH_END_RESET_DELAY_TICKS);
+        scheduler.runLater(() -> {
+            // Teleport every online player to the lobby spawn BEFORE resetRoundState
+            // despawns the cannon/plane mobs they're mounted on. Otherwise they'd
+            // dismount mid-air and fall to their death when the mobs vanish.
+            Location lobbySpawn = plugin.getLobbySpawnLocation();
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                p.teleport(lobbySpawn);
+            }
+            resetRoundState();
+        }, MATCH_END_RESET_DELAY_TICKS);
+    }
+
+    @Override
+    public void checkLastTeamStanding() {
+        long activeTeams = runtime.getTeams().values().stream()
+            .filter(this::hasActivePlayer)
+            .count();
+        if (activeTeams <= 1) {
+            triggerMatchEnd();
+        }
+    }
+
+    private boolean hasActivePlayer(Team team) {
+        if (team.getMembers().isEmpty()) return false;
+        for (UUID memberId : team.getMembers()) {
+            GamePlayer gp = runtime.getGamePlayer(memberId);
+            if (gp != null && !gp.isEliminated()) return true;
+        }
+        return false;
     }
 
     private Team determineWinner() {
@@ -437,7 +478,7 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
             subtitle = Component.text("No winner determined", NamedTextColor.GRAY);
         } else {
             titleText = Component.text("WINNER", NamedTextColor.GOLD);
-            subtitle = Component.text(winner.getName().toUpperCase(), NamedTextColor.GREEN);
+            subtitle = Component.text(winner.getDisplayName().toUpperCase(), NamedTextColor.GREEN);
         }
 
         Title adventureTitle = Title.title(
@@ -452,7 +493,7 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
 
         Component chatMessage = winner == null
             ? Component.text("Match ended — no winner determined.", NamedTextColor.GOLD)
-            : Component.text("Match ended — winner: " + winner.getName(), NamedTextColor.GOLD);
+            : Component.text("Match ended — winner: " + winner.getDisplayName(), NamedTextColor.GOLD);
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.showTitle(adventureTitle);
@@ -476,13 +517,38 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
                     Duration.ofMillis(1000)
                 )
             ));
+
+            // Plane can no longer respawn — mark this player permanently eliminated,
+            // then re-check whether only one team remains with active players.
+            GamePlayer gp = getGamePlayer(player.getUniqueId());
+            if (gp != null) gp.setEliminated(true);
+            checkLastTeamStanding();
+
+            // Turret-based fallback: covers cases where the player-eliminated bookkeeping
+            // misses (e.g. a player rejoined after team elimination got a fresh GamePlayer
+            // with eliminated=false). triggerMatchEnd is idempotent and no-ops outside
+            // IN_GAME.
+            long teamsWithAliveTurrets = runtime.getTeams().values().stream()
+                .filter(this::teamHasAliveTurret)
+                .count();
+            if (teamsWithAliveTurrets <= 1) {
+                triggerMatchEnd();
+            }
             return;
         }
 
-        scheduler.runLater(
-            () -> planeSpawnService.spawnPlane(teamName, location, player),
-            delay * 20L
-        );
+        scheduler.runLater(() -> {
+            // Respawn is happening — pilot is alive again. Reset the eliminated flag
+            // that was set in Vehicle.handlePlaneDeath so subsequent checkLastTeamStanding
+            // calls correctly count this player as active.
+            GamePlayer gp = getGamePlayer(player.getUniqueId());
+            if (gp != null) gp.setEliminated(false);
+
+            planeSpawnService.spawnPlane(teamName, location, player);
+            // Defensive recheck in case any other team was eliminated while this
+            // respawn was scheduled.
+            checkLastTeamStanding();
+        }, delay * 20L);
     }
 
     /* == Orchestrator - pasteMap == */

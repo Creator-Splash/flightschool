@@ -78,6 +78,13 @@ public class Vehicle {
         Player pilot = getOwnerPlayer(entity);
         if (pilot == null) return;
 
+        // Mark eliminated immediately so checkLastTeamStanding (called below) sees an
+        // accurate state. If the respawn is allowed, the runLater inside
+        // PaperGameManager.spawnDelayedPlane will reset eliminated=false before
+        // the plane is spawned again.
+        GamePlayer pilotGp = plugin.getGameManager().getGamePlayer(pilot.getUniqueId());
+        if (pilotGp != null) pilotGp.setEliminated(true);
+
         List<Location> planeLocations = plugin.getConfigManager().getPlaneLocations().get(teamName);
         if (planeLocations == null || planeLocations.isEmpty()) return;
 
@@ -89,6 +96,11 @@ public class Vehicle {
         pilot.setGameMode(GameMode.SPECTATOR);
 
         spawnRespawnRunnable(plugin, pilot, team, teamName, respawnLocation);
+
+        // Re-check after every plane death: if another team was already eliminated
+        // and this death (or its blocked respawn) leaves only one team with active
+        // players, the match should end. checkLastTeamStanding is idempotent.
+        plugin.getGameOrchestrator().checkLastTeamStanding();
     }
 
     private Location resolveRespawnLocation(
@@ -104,6 +116,12 @@ public class Vehicle {
         return planeLocations.get(respawnIndex).clone();
     }
 
+    /**
+     * @deprecated Dead code — never called. The respawn flow runs through
+     * {@code KillcamManager.onReplayFinished} → {@code GameOrchestrator.spawnDelayedPlane}.
+     * Slated for removal in a future cleanup pass.
+     */
+    @Deprecated
     private void spawnRespawnRunnable(
         FlightSchool plugin,
         Player pilot,
@@ -111,9 +129,15 @@ public class Vehicle {
         String teamName,
         Location respawnLocation
     ) {
-        // TODO
+        // TODO: dead code, see deprecation notice
     }
 
+    /**
+     * @deprecated Dead code — never called. The actual respawn-block logic lives in
+     * {@code PaperGameManager.spawnDelayedPlane}. Slated for removal in a future
+     * cleanup pass.
+     */
+    @Deprecated
     private static void handleRespawnAttempt(
         FlightSchool plugin,
         Player pilot,
@@ -121,7 +145,7 @@ public class Vehicle {
         String teamName,
         Location respawnLocation
     ) {
-        // TODO
+        // TODO: dead code, see deprecation notice
     }
 
     /* Turret Death */
@@ -147,6 +171,10 @@ public class Vehicle {
             )
         ));
 
+        // Cannon operators have no respawn — mark this player out for the rest of the round.
+        GamePlayer operatorGp = plugin.getGameManager().getGamePlayer(operator.getUniqueId());
+        if (operatorGp != null) operatorGp.setEliminated(true);
+
         team.increaseDestroyedBlimps();
 
         notifyTeamCannonLost(plugin, team);
@@ -154,6 +182,9 @@ public class Vehicle {
         if (team.getDestroyedBlimps() >= plugin.getGameManager()
             .getRoleLimit(Role.CANNON_OPERATOR)) {
             eliminateTeam(plugin, team, teamName);
+        } else {
+            // Defensive — another team may already be down to its last cannon player.
+            plugin.getGameOrchestrator().checkLastTeamStanding();
         }
     }
 
@@ -173,6 +204,14 @@ public class Vehicle {
     private static void eliminateTeam(FlightSchool plugin, Team team, String teamName) {
         team.setBlimpDestroyed(true);
 
+        // Mark every team member eliminated so checkLastTeamStanding sees this team
+        // as out. This covers cannon operators already in spectator AND any plane
+        // pilots whose planes are about to be despawned.
+        for (UUID memberId : team.getMembers()) {
+            GamePlayer gp = plugin.getGameManager().getGamePlayer(memberId);
+            if (gp != null) gp.setEliminated(true);
+        }
+
         Component eliminatedMessage = Component.text("════════════════════════════════", NamedTextColor.DARK_RED)
             .append(Component.newline())
             .append(Component.text("Your blimp has been destroyed!", NamedTextColor.RED))
@@ -188,12 +227,18 @@ public class Vehicle {
 
         plugin.getGameOrchestrator().explodeBlimp(teamName);
 
-        // Last-team-standing check: if at most one team still has alive turrets,
-        // end the match. triggerMatchEnd no-ops if state isn't IN_GAME.
-        long aliveCount = plugin.getGameManager().getTeams().values().stream()
+        // Single source of truth for end-of-match detection: counts teams with any
+        // non-eliminated player and triggers match end if only one (or zero) remain.
+        plugin.getGameOrchestrator().checkLastTeamStanding();
+
+        // Turret-based fallback: covers cases where the player-eliminated bookkeeping
+        // misses a team (e.g. a player rejoined after team elimination got a fresh
+        // GamePlayer with eliminated=false). triggerMatchEnd is idempotent and no-ops
+        // outside IN_GAME.
+        long teamsWithAliveTurrets = plugin.getGameManager().getTeams().values().stream()
             .filter(plugin.getGameManager()::teamHasAliveTurret)
             .count();
-        if (aliveCount <= 1) {
+        if (teamsWithAliveTurrets <= 1) {
             plugin.getGameOrchestrator().triggerMatchEnd();
         }
     }
