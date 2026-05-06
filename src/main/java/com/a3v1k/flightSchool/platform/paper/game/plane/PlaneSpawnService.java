@@ -223,7 +223,7 @@ public final class PlaneSpawnService {
     }
 
     private void registerHealthManager(Team team, List<ActiveMob> activeMobs) {
-        PaperBlimpHealthManager healthManager = new PaperBlimpHealthManager(activeMobs);
+        PaperBlimpHealthManager healthManager = new PaperBlimpHealthManager(activeMobs, team, plugin);
         Scheduler.Task task = scheduler.runRepeating(healthManager::update, 0L, 1L);
         blimpHealthTasks.put(team.getName(), task);
         healthManagers.put(team.getName(), healthManager);

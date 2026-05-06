@@ -3,6 +3,7 @@ package com.a3v1k.flightSchool.platform.paper.listener;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
+import com.a3v1k.flightSchool.domain.player.Role;
 import com.a3v1k.flightSchool.domain.team.Team;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -16,6 +17,7 @@ import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.world.WorldLoadEvent;
 
 public class PlayerListener implements Listener {
@@ -85,6 +87,30 @@ public class PlayerListener implements Listener {
             player.setSpectatorTarget(teamMember);
             return;
         }
+    }
+
+    /* == Plane pilot sneak suppression (T3) ==
+     * GameListener.onVehicleExit cancels the actual dismount, but PlayerToggleSneakEvent
+     * fires independently — without this handler the pilot still triggers the sneak
+     * state/animation while mounted. Cancel sneak for active plane pilots only.
+     */
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    public void onPlanePilotSneak(PlayerToggleSneakEvent event) {
+        if (!event.isSneaking()) return;
+        if (!shouldKeepPlanePilotMounted(event.getPlayer())) return;
+
+        event.setCancelled(true);
+    }
+
+    private boolean shouldKeepPlanePilotMounted(Player player) {
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return false;
+        if (player.getGameMode() != GameMode.ADVENTURE) return false;
+        if (!player.isInsideVehicle()) return false;
+
+        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
+        if (gamePlayer == null || gamePlayer.getRole() != Role.PLANE_PILOT) return false;
+
+        return !gamePlayer.isEliminated();
     }
 
     @EventHandler

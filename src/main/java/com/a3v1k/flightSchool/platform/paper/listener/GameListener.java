@@ -1,5 +1,6 @@
 package com.a3v1k.flightSchool.platform.paper.listener;
 
+import com.a3v1k.flightSchool.application.game.BlimpHealthManager;
 import com.a3v1k.flightSchool.application.scheduler.Scheduler;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.match.GameState;
@@ -69,6 +70,13 @@ public class GameListener implements Listener {
 
         plugin.getLogger().info("[Detected Turret Damage] Team Turret: %s || Team attacking: %s"
             .formatted(team.getName(), attackingTeamName));
+
+        // Reflect the hit in the blimp's tracked health pool so the floating display
+        // updates and the broken-state transition can fire when health hits zero.
+        BlimpHealthManager healthManager = plugin.getGameManager().getHealthManager().get(victimTeamName);
+        if (healthManager != null) {
+            healthManager.damage(event.getFinalDamage());
+        }
 
         for (Player player : plugin.getGameManager().getPlaneMembers(team)) {
             if (warningManagerMap.containsKey(player)) continue;
