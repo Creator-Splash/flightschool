@@ -35,13 +35,14 @@ public final class FlightSchoolGameAdapter implements GameAdapter {
 
     @Override
     public GameRequirements requirements() {
-        int durationSeconds = plugin.getConfig().getInt("game.duration-seconds", 600);
+        int durationSeconds = Math.min(50 * 60,
+                Math.max(60, plugin.getConfig().getInt("game.duration-seconds", 600)));
         return GameRequirements.builder()
                 .teamMode(TeamMode.TEAM_VS_TEAM)
                 .teamRange(2, 8)
                 .playersPerTeamRange(1, 5)
                 .declareEndCondition(EndCondition.lastTeamStanding())
-                .declareEndCondition(EndCondition.timeout(Duration.ofSeconds(Math.max(60, durationSeconds))))
+                .declareEndCondition(EndCondition.timeout(Duration.ofSeconds(durationSeconds)))
                 .evacuationPolicy(EvacuationPolicy.AUTO_TO_LOBBY)
                 .onEndContinuation(OnEndContinuation.PUBLISH_GAME_COMPLETE)
                 .build();

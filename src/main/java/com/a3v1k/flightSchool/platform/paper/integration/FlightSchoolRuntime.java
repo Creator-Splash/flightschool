@@ -8,6 +8,7 @@ import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import creatorsplash.creatorsplashcore.api.runtime.GameRuntime;
 import creatorsplash.creatorsplashcore.api.runtime.RuntimeServices;
 import creatorsplash.creatorsplashcore.api.scoring.EndReason;
+import creatorsplash.creatorsplashcore.api.session.MatchSession;
 import creatorsplash.creatorsplashcore.event.GameContext;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -35,6 +36,7 @@ public final class FlightSchoolRuntime extends GameRuntime {
 
     private final FlightSchool plugin;
     private final FlightSchoolGameAdapter adapter;
+    private MatchSession session;
 
     public FlightSchoolRuntime(FlightSchool plugin, FlightSchoolGameAdapter adapter,
             GameContext ctx, RuntimeServices services) {
@@ -54,6 +56,7 @@ public final class FlightSchoolRuntime extends GameRuntime {
             }
         }
 
+        session = services().sessions().create(0, null);
         seedTeamsFromContext(context());
 
         try {
@@ -80,6 +83,10 @@ public final class FlightSchoolRuntime extends GameRuntime {
         }
 
         plugin.getGameManager().assignPlayerToTeam(player, fsTeam);
+        if (session != null && teamName != null && !teamName.isBlank()) {
+            session.addPlayer(player.getUniqueId(), teamName.toLowerCase(),
+                    player.getName(), false);
+        }
 
         TeamManager tm = plugin.getTeamManager();
         if (tm != null) tm.teleportPlayerToSpawn(player, fsTeam);
@@ -139,10 +146,13 @@ public final class FlightSchoolRuntime extends GameRuntime {
                         + entry.getKey() + "'; skipping its " + entry.getValue().size() + " player(s).");
                 continue;
             }
+            String side = entry.getKey().toLowerCase(Locale.ROOT);
             for (UUID id : entry.getValue()) {
                 Player p = Bukkit.getPlayer(id);
-                if (p == null) continue;
-                gm.assignPlayerToTeam(p, fsTeam);
+                if (p != null) gm.assignPlayerToTeam(p, fsTeam);
+                if (session != null) {
+                    session.addPlayer(id, side, p == null ? null : p.getName(), false);
+                }
             }
         }
     }
