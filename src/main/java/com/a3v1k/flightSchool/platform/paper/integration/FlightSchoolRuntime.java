@@ -118,7 +118,15 @@ public final class FlightSchoolRuntime extends GameRuntime {
     @Override
     @Nullable
     protected EndReason evaluateEndCondition() {
-        if (plugin.getGameManager().getGameState() == GameState.ENDING) return EndReason.NATURAL_WIN;
+        GameManager gm = plugin.getGameManager();
+        if (gm.getGameState() == GameState.ENDING) return EndReason.NATURAL_WIN;
+        if (gm.getGameState() != GameState.IN_GAME) return null;
+        int teamsAlive = 0;
+        for (Team t : gm.getTeams().values()) {
+            if (t.getMembers().isEmpty()) continue;
+            if (!t.getBlimpDestroyed()) teamsAlive++;
+        }
+        if (teamsAlive <= 1) return EndReason.NATURAL_WIN;
         return null;
     }
 
