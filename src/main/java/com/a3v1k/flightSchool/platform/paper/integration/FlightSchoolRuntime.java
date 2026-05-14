@@ -17,32 +17,40 @@ import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public final class FlightSchoolRuntime extends GameRuntime {
 
     private static final Map<String, String> EVENT_TO_FS_TEAM = Map.of(
-            "orca", "a",
-            "seahorse", "b",
-            "turtle", "c",
-            "dolphin", "d",
-            "swordfish", "e",
-            "stingray", "f",
-            "jellyfish", "g",
-            "octopus", "h");
+            "orca", "red",
+            "seahorse", "yellow",
+            "turtle", "green",
+            "dolphin", "blue",
+            "swordfish", "dark_violet",
+            "stingray", "violet",
+            "jellyfish", "dark_blue",
+            "octopus", "orange");
 
     private final FlightSchool plugin;
     private final FlightSchoolGameAdapter adapter;
     private MatchSession session;
+    private final Set<Team> seededTeams = new HashSet<>();
 
     public FlightSchoolRuntime(FlightSchool plugin, FlightSchoolGameAdapter adapter,
             GameContext ctx, RuntimeServices services) {
         super(ctx, services);
         this.plugin = plugin;
         this.adapter = adapter;
+    }
+
+    @Override
+    protected boolean wantsPreGamePhase() {
+        return true;
     }
 
     @Override
@@ -58,12 +66,17 @@ public final class FlightSchoolRuntime extends GameRuntime {
 
         session = services().sessions().create(0, null);
         seedTeamsFromContext(context());
+        plugin.getLogger().info("[FlightSchoolRuntime] Round " + context().round() + "/"
+                + context().totalRounds() + " prepared with " + seededTeams.size()
+                + " team(s); waiting for first arrival before launching cinematic.");
+    }
 
+    @Override
+    protected void onGameplayStart() {
         try {
             plugin.startGame();
             plugin.getLogger().info("[FlightSchoolRuntime] Game " + context().round()
-                    + "/" + context().totalRounds() + " started for "
-                    + context().teamAssignments().size() + " team(s).");
+                    + "/" + context().totalRounds() + " launched (PRE_GAME -> PLAYING).");
         } catch (Throwable ex) {
             String reason = ex.getClass().getSimpleName() + ": "
                     + (ex.getMessage() == null ? "" : ex.getMessage());
@@ -128,9 +141,9 @@ public final class FlightSchoolRuntime extends GameRuntime {
         GameManager gm = plugin.getGameManager();
         if (gm.getGameState() == GameState.ENDING) return EndReason.NATURAL_WIN;
         if (gm.getGameState() != GameState.IN_GAME) return null;
+        if (seededTeams.size() < 2) return null;
         int teamsAlive = 0;
-        for (Team t : gm.getTeams().values()) {
-            if (t.getMembers().isEmpty()) continue;
+        for (Team t : seededTeams) {
             if (!t.getBlimpDestroyed()) teamsAlive++;
         }
         if (teamsAlive <= 1) return EndReason.NATURAL_WIN;
@@ -139,6 +152,7 @@ public final class FlightSchoolRuntime extends GameRuntime {
 
     private void seedTeamsFromContext(GameContext ctx) {
         GameManager gm = plugin.getGameManager();
+        seededTeams.clear();
         for (Map.Entry<String, List<UUID>> entry : ctx.teamAssignments().entrySet()) {
             Team fsTeam = resolveFsTeam(entry.getKey());
             if (fsTeam == null) {
@@ -146,6 +160,7 @@ public final class FlightSchoolRuntime extends GameRuntime {
                         + entry.getKey() + "'; skipping its " + entry.getValue().size() + " player(s).");
                 continue;
             }
+            seededTeams.add(fsTeam);
             String side = entry.getKey().toLowerCase(Locale.ROOT);
             for (UUID id : entry.getValue()) {
                 Player p = Bukkit.getPlayer(id);
