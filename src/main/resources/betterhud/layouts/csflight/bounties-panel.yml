@@ -1,0 +1,33 @@
+csflight_bounties_panel:
+  images:
+    panel:
+      name: csflight_bounties_panel_bg
+      x: -55
+      y: 15
+      scale: 1
+  texts:
+    header:
+      name: csflight_default
+      pattern: "<color:#ff2200>Bounties"
+      align: center
+      line-align: center
+      x: 5
+      y: 20
+      scale: 0.8
+      outline: true
+      deserialize-text: true
+    bounty_rows:
+      name: csflight_default
+      pattern: |-
+        #1 <color:#ffd000>[papi:supersoakers_bounty1_user] <white>: [papi:supersoakers_bounty1_points]
+        #2 <gray>[papi:supersoakers_bounty2_user] <white>: [papi:supersoakers_bounty2_points]
+        #3 <color:#a15000>[papi:supersoakers_bounty3_user] <white>: [papi:supersoakers_bounty3_points]
+      align: center
+      line-align: center
+      line: 5
+      line-width: 12
+      x: 5
+      y: 45
+      scale: 0.45
+      outline: true
+      deserialize-text: true

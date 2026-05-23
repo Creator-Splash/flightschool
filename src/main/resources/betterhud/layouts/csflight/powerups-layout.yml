@@ -1,0 +1,195 @@
+csflight_powerups:
+  images:
+    1:
+      name: csflight_speedboost
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "1"
+          operation: '=='
+    2:
+      name: csflight_slow_trap
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "2"
+          operation: '=='
+    3:
+      name: csflight_blindness_trap
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "3"
+          operation: '=='
+    4:
+      name: csflight_instant_health
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "4"
+          operation: '=='
+    5:
+      name: csflight_fov_warp
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "5"
+          operation: '=='
+    6:
+      name: csflight_explosve_shot
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "6"
+          operation: '=='
+    7:
+      name: csflight_temporary_shield
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "7"
+          operation: '=='
+    8:
+      name: csflight_invisibility
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "8"
+          operation: '=='
+    9:
+      name: csflight_enemy_glow
+      x: 23
+      y: 40
+      conditions:
+        1:
+          first: (number)papi:waterguns_powerup_number
+          second: "9"
+          operation: '=='
+  texts:
+    1:
+      name: csflight_default
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      background: try
+      background-scale: 1
+      x: 10
+      y: 20
+      pattern: "<img:starfish> Player Score: [papi:flightschool_score]"
+      align: left
+      space: 0
+csflight_text:
+  images:
+    2:
+      name: csflight_weapon1
+      x: -98
+      y: -38
+      scale: 0.5
+      conditions:
+        1:
+          first: (string)papi:waterguns_new_gun_name
+          second: "'Pistol'"
+          operation: '=='
+    3:
+      name: csflight_sniper
+      x: -98
+      y: -38
+      scale: 0.5
+      conditions:
+        1:
+          first: (string)papi:waterguns_new_gun_name
+          second: "'Sniper'"
+          operation: '=='
+    4:
+      name: csflight_submachine
+      x: -98
+      y: -38
+      scale: 0.5
+      conditions:
+        1:
+          first: (string)papi:waterguns_new_gun_name
+          second: "'Submachine'"
+          operation: '=='
+    5:
+      name: csflight_machinegun
+      x: -98
+      y: -38
+      scale: 0.5
+      conditions:
+        1:
+          first: (string)papi:waterguns_new_gun_name
+          second: "'Machine Gun'"
+          operation: '=='
+    6:
+      name: csflight_rifle
+      x: -98
+      y: -38
+      scale: 0.5
+      conditions:
+        1:
+          first: (string)papi:waterguns_new_gun_name
+          second: "'Rifle'"
+          operation: '=='
+  texts:
+    1:
+      name: csflight_default
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -70
+      y: -40
+      pattern: "Next Weapon"
+      align: left
+      space: 0
+    2:
+      name: csflight_default
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.5
+      x: -70
+      y: -32
+      pattern: "[papi:waterguns_new_gun_name]"
+      align: left
+      space: 0
+    3:
+      name: csflight_default
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -70
+      y: -20
+      pattern: "Weapon Range: [papi:waterguns_new_gun_range_blocks]"
+      align: left
+      space: 0
+csflight_blackweapon:
+  images:
+    3:
+      name: csflight_splashvoting
+      x: 20
+      y: 20
+      scale: 0.8
+      opacity: 0.5

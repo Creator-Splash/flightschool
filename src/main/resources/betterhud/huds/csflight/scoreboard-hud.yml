@@ -1,0 +1,15 @@
+csflight_splashvoting:
+  layouts:
+    1:
+      name: csflight_blackbox
+      x: 100
+      y: 50
+    2:
+      name: csflight_splashvoting
+      x: 100
+      y: 50
+  conditions:
+    1:
+      first: gamemode
+      second: "'SPECTATOR'"
+      operation: '!='

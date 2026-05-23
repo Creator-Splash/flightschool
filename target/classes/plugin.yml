@@ -4,6 +4,8 @@ main: com.a3v1k.flightSchool.platform.paper.FlightSchool
 api-version: '1.21'
 depend:
   - CreatorSplashCore
+softdepend:
+  - LuckPerms
 commands:
   fsh:
     description: Main command for the FlightSchool game

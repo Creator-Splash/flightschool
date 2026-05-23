@@ -1,0 +1,68 @@
+csflight_eliminations:
+  images:
+    1:
+      name: csflight_supersoakers
+      x: -42
+      y: -100
+      scale: 1.3
+      opacity: 0.8
+    2:
+      name: csflight_gun
+      x: -42
+      y: -100
+      scale: 1.3
+      opacity: 0.8
+      color-overrides:
+        1:
+          color: "#f7b920"
+          follow: papi:last_kill
+          conditions:
+            1:
+              first: papi:luckperms_groups
+              second: "'team_seahorse'"
+              operation: "=="
+        2:
+          color: "#0098ff"
+          follow: papi:last_kill
+          conditions:
+            1:
+              first: papi:luckperms_groups
+              second: "'team_dolphin'"
+              operation: "=="
+  heads:
+    0:
+      name: csflight_test_head
+      x: 38
+      y: -93
+      follow: papi:waterguns_last_kill
+  texts:
+    1:
+      name: csflight_default
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: red
+      scale: 0.4
+      x: -28
+      y: -94
+      pattern: "ELIMINATION"
+      align: left
+      space: 0
+    2:
+      name: csflight_default
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: <#3a6cc5>
+      scale: 0.3
+      x: -28
+      y: -82
+      pattern: "<#e9e800>[papi:waterguns_last_kill] <green>X[papi:waterguns_last_points]"
+      align: left
+      space: 0
+  animations:
+    duration: 100
+    x-equation: 12 - 1.25 * (min(64 * sin(t / 100 * pi), 20))
+    y-equation: 0
+    opacity-equation: 7 * sin(t / 100 * pi)
+    type: play_once

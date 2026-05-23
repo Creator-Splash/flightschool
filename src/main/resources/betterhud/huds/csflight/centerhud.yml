@@ -1,0 +1,10 @@
+csflight_centerhud:
+  display: GUI
+  toggle-command: "/centerhud"
+  toggle-actions:
+    on-join: true
+  layouts:
+    1:
+      name: csflight_center_texts
+      x: 50
+      y: 50

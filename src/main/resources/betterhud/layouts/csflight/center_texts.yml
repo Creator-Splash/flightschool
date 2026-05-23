@@ -1,0 +1,14 @@
+csflight_center_texts:
+  texts:
+    1:
+      name: csflight_default
+      space: 0
+      disable-number-format: true
+      pattern: "<white>[papi:flightschool_timer][papi:flightschool_health_blimp][papi:flightschool_boost_hint]"
+      align: center
+      x: 0
+      y: 145
+      color: white
+      scale: .4
+      outline: true
+      deserialize-text: true

@@ -1,0 +1,61 @@
+csflight_default:
+  scale: 24
+  file: csflight/font.ttf
+  images:
+    starfish:
+      name: csflight/icons/starfish.png
+      x: 0
+      y: 4
+      scale: 1.0
+    right_click:
+      name: csflight/icons/right_click.png
+      x: 0
+      y: 0
+      scale: 0.75
+csflight_default2:
+  scale: 20
+  file: csflight/KR.ttf
+csflight_upheavtt:
+  scale: 24
+  file: csflight/upheavtt.ttf
+  images:
+    turtle:
+      name: csflight/icons/turtle.png
+      x: 0
+      y: -6
+      scale: 1.0
+    dolphin:
+      name: csflight/icons/dolphin.png
+      x: 0
+      y: -6
+      scale: 1.0
+    stingray:
+      name: csflight/icons/stingray.png
+      x: 0
+      y: -6
+      scale: 1.0
+    orca:
+      name: csflight/icons/orcas.png
+      x: 0
+      y: -6
+      scale: 1.0
+    seahorse:
+      name: csflight/icons/seahorse.png
+      x: 0
+      y: -6
+      scale: 1.0
+    octopus:
+      name: csflight/icons/octupus.png
+      x: 0
+      y: -6
+      scale: 1.0
+    jellyfish:
+      name: csflight/icons/jellyfish.png
+      x: 0
+      y: -6
+      scale: 1.0
+    swordfish:
+      name: csflight/icons/swordfish.png
+      x: 0
+      y: -6
+      scale: 1.0

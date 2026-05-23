@@ -1,0 +1,7 @@
+event-mode:
+  warmup-seconds: 5
+  post-end-seconds: 5
+  readiness-timeout-seconds: 0
+
+game:
+  duration-seconds: 600

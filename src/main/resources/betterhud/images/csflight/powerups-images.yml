@@ -1,0 +1,42 @@
+csflight_speedboost:
+  type: single
+  file: csflight/powerups/burbuja1.png
+csflight_slow_trap:
+  type: single
+  file: csflight/powerups/burbuja2.png
+csflight_blindness_trap:
+  type: single
+  file: csflight/powerups/burbuja3.png
+csflight_instant_health:
+  type: single
+  file: csflight/powerups/burbuja4.png
+csflight_fov_warp:
+  type: single
+  file: csflight/powerups/burbuja5.png
+csflight_explosve_shot:
+  type: single
+  file: csflight/powerups/burbuja6.png
+csflight_temporary_shield:
+  type: single
+  file: csflight/powerups/burbuja7.png
+csflight_invisibility:
+  type: single
+  file: csflight/powerups/burbuja8.png
+csflight_enemy_glow:
+  type: single
+  file: csflight/powerups/burbuja9.png
+csflight_weapon1:
+  type: single
+  file: csflight/weapon1.png
+csflight_sniper:
+  type: single
+  file: csflight/sniper.png
+csflight_submachine:
+  type: single
+  file: csflight/submachine.png
+csflight_machinegun:
+  type: single
+  file: csflight/machinegun.png
+csflight_rifle:
+  type: single
+  file: csflight/rifle.png

@@ -1,0 +1,6 @@
+csflight_supersoakers:
+  type: single
+  file: csflight/elimination/supersoakers.png
+csflight_gun:
+  type: single
+  file: csflight/elimination/gun.png
