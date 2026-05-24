@@ -31,9 +31,9 @@ public final class FlightSchoolRuntime extends GameRuntime {
             "seahorse", "yellow",
             "turtle", "green",
             "dolphin", "blue",
-            "swordfish", "dark_violet",
-            "stingray", "violet",
-            "jellyfish", "dark_blue",
+            "swordfish", "dark_blue",
+            "stingray", "dark_violet",
+            "jellyfish", "violet",
             "octopus", "orange");
 
     private final FlightSchool plugin;
