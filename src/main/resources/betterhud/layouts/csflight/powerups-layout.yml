@@ -89,7 +89,7 @@ csflight_powerups:
       layer: 1
       color: white
       scale: 0.4
-      background: try
+      background: csflight_try
       background-scale: 1
       x: 10
       y: 20
