@@ -9,6 +9,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -102,6 +103,14 @@ public class PlayerListener implements Listener {
         event.setCancelled(true);
     }
 
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    public void onPlanePilotDismount(EntityDismountEvent event) {
+        if (!(event.getEntity() instanceof Player player)) return;
+        if (!shouldKeepPlanePilotMounted(player)) return;
+
+        event.setCancelled(true);
+    }
+
     private boolean shouldKeepPlanePilotMounted(Player player) {
         if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return false;
         if (player.getGameMode() != GameMode.ADVENTURE) return false;
@@ -110,7 +119,7 @@ public class PlayerListener implements Listener {
         GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
         if (gamePlayer == null || gamePlayer.getRole() != Role.PLANE_PILOT) return false;
 
-        return !gamePlayer.isEliminated();
+        return !gamePlayer.isEliminated() && !gamePlayer.isLastStand();
     }
 
     @EventHandler

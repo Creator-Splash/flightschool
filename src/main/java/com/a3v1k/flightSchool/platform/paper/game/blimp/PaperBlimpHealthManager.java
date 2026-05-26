@@ -2,6 +2,7 @@ package com.a3v1k.flightSchool.platform.paper.game.blimp;
 
 import com.a3v1k.flightSchool.application.game.BlimpHealthManager;
 import com.a3v1k.flightSchool.domain.blimp.BlimpData;
+import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import io.lumine.mythic.core.mobs.ActiveMob;
@@ -186,6 +187,13 @@ public final class PaperBlimpHealthManager implements BlimpHealthManager {
         );
 
         for (UUID uuid : team.getMembers()) {
+            // Last stand flips on every team member when the blimp's tracked HP
+            // hits zero — gates respawn in PaperGameManager.spawnDelayedPlane so
+            // pilots whose blimp is destroyed don't get another life even if
+            // cannons are still up.
+            GamePlayer gp = plugin.getGameManager().getGamePlayer(uuid);
+            if (gp != null) gp.setLastStand(true);
+
             Player player = Bukkit.getPlayer(uuid);
             if (player != null && player.isOnline()) {
                 player.showTitle(title);

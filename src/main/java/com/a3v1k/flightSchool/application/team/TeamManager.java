@@ -23,17 +23,22 @@ import java.util.List;
 public class TeamManager {
 
     private final FlightSchool plugin;
-    private final LuckPerms luckPerms;
 
     public TeamManager() {
         this.plugin = FlightSchool.getInstance();
-        this.luckPerms = LuckPermsProvider.get();
     }
 
     public void assignTeamsAndTeleport() {
         GameManager gameManager = plugin.getGameManager();
         List<Player> playersToAssign = new ArrayList<>();
+        LuckPerms luckPerms = Bukkit.getPluginManager().isPluginEnabled("LuckPerms")
+            ? LuckPermsProvider.get()
+            : null;
         for (Player player : Bukkit.getOnlinePlayers()) {
+            if (luckPerms == null) {
+                playersToAssign.add(player);
+                continue;
+            }
             User user = luckPerms.getUserManager().getUser(player.getUniqueId());
             if (user != null) {
                 String primaryGroup = user.getPrimaryGroup();
@@ -58,9 +63,9 @@ public class TeamManager {
     }
 
     public void teleportPlayerToSpawn(Player player, Team team) {
-        World world = Bukkit.getWorld("minecraft:game-world");
+        World world = Bukkit.getWorld("game-world");
         if (world == null) {
-            plugin.getLogger().severe("World 'minecraft:game-world' not found!");
+            plugin.getLogger().severe("World 'game-world' not found!");
             return;
         }
 
@@ -70,7 +75,7 @@ public class TeamManager {
             .get(BukkitAdapter.adapt(world));
 
         if (regionManager == null) {
-            plugin.getLogger().severe("Region manager for world 'minecraft:game-world' not found!");
+            plugin.getLogger().severe("Region manager for world 'game-world' not found!");
             return;
         }
 

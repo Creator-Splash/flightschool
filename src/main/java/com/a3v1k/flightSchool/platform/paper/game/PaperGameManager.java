@@ -530,6 +530,23 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
     public void spawnDelayedPlane(String teamName, Location location, Player player, int delay) {
         Team team = getTeam(teamName);
 
+        GamePlayer pilotGp = getGamePlayer(player.getUniqueId());
+        if (pilotGp != null && pilotGp.isLastStand()) {
+            // Blimp HP hit zero — pilot is on last stand, next death is permanent.
+            player.showTitle(Title.title(
+                Component.text("Eliminated!", NamedTextColor.RED),
+                Component.text("Your blimp has been destroyed."),
+                Title.Times.times(
+                    Duration.ofMillis(500),
+                    Duration.ofMillis(3500),
+                    Duration.ofMillis(1000)
+                )
+            ));
+            pilotGp.setEliminated(true);
+            checkLastTeamStanding();
+            return;
+        }
+
         if (team != null && !teamHasAliveTurret(team)) {
             player.showTitle(Title.title(
                 Component.text("Eliminated!", NamedTextColor.RED),

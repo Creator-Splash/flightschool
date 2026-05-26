@@ -138,7 +138,7 @@ public final class PlaneSpawnService {
                 plugin.getKillcamManager().startRecording(player);
                 index++;
 
-                scheduleMountSignal(spawnedMob, player, "mountPlane");
+                scheduleMountPlaneWithRetry(spawnedMob, player);
                 scheduler.runLater(() -> {
                     if (!spawnedMob.getEntity().getBukkitEntity().getPassengers().contains(player)) {
                         spawnedMob.getEntity().getBukkitEntity().addPassenger(player);
@@ -167,7 +167,7 @@ public final class PlaneSpawnService {
         assignOwner(spawnedMob, player);
         player.setGameMode(GameMode.ADVENTURE);
 
-        scheduleMountSignal(spawnedMob, player, "mountPlane");
+        scheduleMountPlaneWithRetry(spawnedMob, player);
         scheduler.runLater(() -> {
             if (!spawnedMob.getEntity().getBukkitEntity().getPassengers().contains(player)) {
                 spawnedMob.getEntity().getBukkitEntity().addPassenger(player);
@@ -203,6 +203,25 @@ public final class PlaneSpawnService {
             if (mob.isDead() || !player.isOnline()) return;
             mob.signalMob(BukkitAdapter.adapt(player), signal);
         }, 10L);
+    }
+
+    private void scheduleMountPlaneWithRetry(ActiveMob planeMob, Player player) {
+        scheduler.runRepeating(t -> {
+            if (planeMob.isDead() || !player.isOnline()) {
+                t.cancel();
+                return;
+            }
+            planeMob.signalMob(BukkitAdapter.adapt(player), "mountPlane");
+            if (player.isInsideVehicle()) {
+                t.cancel();
+                return;
+            }
+            if (t.elapsedTicks() >= 20) {
+                logger.warning("[FlightSchool] Failed to ModelEngine-mount plane pilot "
+                    + player.getName() + " after 20 attempts.");
+                t.cancel();
+            }
+        }, 20L, 5L);
     }
 
     private void registerActivePlane(Team team, Player player, ActiveMob planeMob) {

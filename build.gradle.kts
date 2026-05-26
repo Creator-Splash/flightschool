@@ -138,7 +138,7 @@ paper {
         }
 
         register("LuckPerms") {
-            required = true
+            required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
         }
 

@@ -12,7 +12,10 @@ import io.lumine.mythic.core.mobs.ActiveMob;
 import lombok.RequiredArgsConstructor;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.incendo.cloud.annotations.Argument;
@@ -24,6 +27,7 @@ import org.incendo.cloud.context.CommandContext;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Admin and debug FlightSchool commands rooted at {@code /fsh}.
@@ -278,6 +282,56 @@ public final class FsAdminCommands implements CommandHandler {
         }
         plugin.getTeamVisualManager().resetTabPluginStyle(player);
         player.sendMessage(Component.text("Reset your tab test name.", NamedTextColor.GREEN));
+    }
+
+    /* == External hooks == */
+
+    /**
+     * External-caller hook (likely a MythicMobs skill) — receives a plane projectile's
+     * block-hit event with the shooter and impact location. The handler currently does
+     * nothing functional: blimp health is driven by turret entity hits in GameListener,
+     * not block hits. Logging is at FINE so this stays quiet under normal operation.
+     */
+    @Command("planeprojectileblockhit <shooter_uuid> <shooter_name> <block_type> <world> <x> <y> <z>")
+    @CommandDescription("Receive a plane-projectile block-hit event from an external caller (MythicMobs)")
+    public void planeProjectileBlockHit(
+        CommandSender sender,
+        @Argument("shooter_uuid") String shooterUuid,
+        @Argument("shooter_name") String shooterName,
+        @Argument("block_type") String blockTypeArg,
+        @Argument("world") String worldName,
+        @Argument("x") double x,
+        @Argument("y") double y,
+        @Argument("z") double z
+    ) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(shooterUuid);
+        } catch (IllegalArgumentException ex) {
+            plugin.getLogger().warning("Invalid shooter UUID for plane projectile block hit: " + shooterUuid);
+            return;
+        }
+
+        Player shooter = Bukkit.getPlayer(uuid);
+        if (shooter == null) {
+            plugin.getLogger().warning("Plane projectile shooter is not online: " + uuid);
+            return;
+        }
+
+        Material hitBlockType = Material.matchMaterial(blockTypeArg);
+        if (hitBlockType == null) {
+            plugin.getLogger().warning("Invalid hit block type for plane projectile block hit: " + blockTypeArg);
+            return;
+        }
+
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) {
+            plugin.getLogger().warning("Invalid world for plane projectile block hit: " + worldName);
+            return;
+        }
+
+        Location hitLocation = new Location(world, x, y, z);
+        plugin.getLogger().fine("Plane projectile hit block " + hitBlockType + " at " + hitLocation);
     }
 
     /* == Suggesters == */
