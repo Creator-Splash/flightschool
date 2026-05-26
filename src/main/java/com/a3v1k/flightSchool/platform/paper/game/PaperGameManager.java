@@ -471,24 +471,36 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
     }
 
     private Team determineWinner() {
+        // Must match checkLastTeamStanding's predicate: a team is in-the-running
+        // iff it still has a non-eliminated player. Using teamHasAliveTurret here
+        // let unseeded teams (members empty, destroyedBlimps=0) pass as "alive",
+        // which collapsed every result into a 0-HP/0-score tie and silently
+        // returned the first hash-iterated team (Orca).
         List<Team> aliveTeams = runtime.getTeams().values().stream()
-            .filter(this::teamHasAliveTurret)
+            .filter(this::hasActivePlayer)
             .toList();
 
-        // Last team standing — fast path.
         if (aliveTeams.size() == 1) return aliveTeams.getFirst();
 
-        // Multi-team timer expiry, or zero-alive (everyone died simultaneously).
-        // Tiebreaker: highest blimp HP, then highest team score (kill-count proxy).
+        // Multi-team timer expiry, or simultaneous wipe. Restrict the fallback
+        // pool to teams that actually had members so phantom unseeded teams
+        // can't win on ties. Tiebreakers: blimp HP, team score, team name.
         List<Team> candidates = aliveTeams.isEmpty()
-            ? new ArrayList<>(runtime.getTeams().values())
+            ? runtime.getTeams().values().stream()
+                .filter(t -> !t.getMembers().isEmpty())
+                .toList()
             : aliveTeams;
 
+        if (candidates.isEmpty()) return null;
+
         return candidates.stream()
-            .max(Comparator.<Team>comparingDouble(t -> {
-                BlimpHealthManager hm = healthManagers.get(t.getName());
-                return hm != null ? hm.getHealth() : 0.0;
-            }).thenComparingInt(t -> runtime.getScoreManager().getScore(t)))
+            .max(Comparator
+                .<Team>comparingDouble(t -> {
+                    BlimpHealthManager hm = healthManagers.get(t.getName());
+                    return hm != null ? hm.getHealth() : 0.0;
+                })
+                .thenComparingInt(t -> runtime.getScoreManager().getScore(t))
+                .thenComparing(Team::getName))
             .orElse(null);
     }
 
