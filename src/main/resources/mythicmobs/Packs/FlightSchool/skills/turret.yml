@@ -1,0 +1,39 @@
+turret_shoot_red:
+  Cooldown: 1.5
+  Skills:
+  - state{s=shooting}
+  - effect:particles{p=smoke;a=5;s=0.1} @ModelPart{pid=cannon;z=-2}
+  - effect:particles{p=smoke;a=5;s=0.1} @ModelPart{pid=cannon2;z=-2}
+  - effect:particles{p=crit;a=10;repeat=1;repeati=1;hS=0.2;vS=0.2;s=0.8;directional=true;fromorigin=true;origin=@ModelPart{pid=cannon;z=-2}} @ModelPart{pid=cannon;z=-1;y=1;x=-1}
+  - effect:particles{p=crit;a=10;repeat=1;repeati=1;hS=0.2;vS=0.2;s=0.8;directional=true;fromorigin=true;origin=@ModelPart{pid=cannon2;z=-2}} @ModelPart{pid=cannon2;z=-1;y=1;x=1}
+  - sound{s=entity.generic.explode;v=1.5;p=1.5} @ModelPart{pid=cannon;z=-2}
+  - sound{s=entity.iron_golem.repair;p=1.5} @ModelPart{pid=cannon;z=-2}
+  - p{
+    oS=[
+      - vfx{m=<caster.var.beam>;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=5;pi=true;pkb=true}];oT=[- e:p{p=reddust;color=<caster.var.color>;size=0.5;a=1;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=500;v=80;g=0.2;hnp=true;origin=@modelpart{p=cannon}} @modelpart{p=cannon;z=-5}
+  - p{
+    oS=[
+      - vfx{m=<caster.var.beam>;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=5;pi=true;pkb=true} - sound{s=entity.experience_orb.pickup;audience=@trigger} @self];oT=[- e:p{p=reddust;color=<caster.var.color>;size=0.5;a=1;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=500;v=80;g=0.2;hnp=true;origin=@modelpart{p=cannon2}} @modelpart{p=cannon2;z=-5}
+    
+Turret_Mount_Mechanic:
+  Skills:
+  # Debug message to confirm click/signal works
+  - message{m="&a[Debug] Mounting..."} @trigger
+  
+  - mountmodel{
+      mid=turret;
+      driver=true;
+      mode=[
+        - setvariable{var=skill.pitch;type=FLOAT;val=<trigger.l.pitch>} @self 
+        - setvariable{var=skill.yaw;type=FLOAT;val=<trigger.l.yaw>} @self 
+        - setvariable{var=skill.pitch;type=FLOAT;val=45} @self ?variableInRange{var=skill.pitch;value=>45}
+        - setvariable{var=skill.pitch;type=FLOAT;val=-45} @self ?variableInRange{var=skill.pitch;value=<-45}
+        - animateModel{model=turret;pid=moving_part;rotation=<skill.var.pitch>,0,0;pos=0,0,0;relative=false;copy=true;override=true;rotmode=local} @self
+        - skill{s=turret_shoot_red} @self ?variableInRange{var=skill.meg:jump;value=>0}
+        - dismountmodel @trigger ?variableInRange{var=skill.meg:sneak;value=>0}
+      ]
+    } @trigger

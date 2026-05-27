@@ -1,0 +1,129 @@
+flightschool_turret_template:
+  Type: SILVERFISH
+  Display: "&a||||||||||||||||||||||||||||||||||||||||||||||||||"
+  Faction: turret
+  Health: 150
+  Options:
+    Invisible: true
+    Silent: true
+    PreventBlockInfection: true
+    NoGravity: true
+    Despawn: false
+    Collidable: false
+    PreventOtherDrops: true
+    KnockbackImmune: true
+  Attributes:
+    KnockbackResistance: 1.0
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - velocity{mode=set;x=0;y=0;z=0} @self ~onTimer:1
+  - skill{s=[
+      - effect:particles{p=explosion_emitter;a=3;hS=1;vS=1}
+      - sound{s=entity.generic.explode;p=0}
+    ]} @self ~onDeath
+  - model{m=turret;ride=true;drive=true;lpitch=true;lyaw=false} @self ~onSpawnOrLoad
+  - setrotation{yaw=0;pitch=0} @self ~onSpawn
+  - skill{s=Turret_Mount_Mechanic} @trigger ~onInteract
+  - skill{s=Turret_Mount_Mechanic} @trigger ~onSignal:mountCannon
+  - setmodeltag{mid=turret;pid=nametag;scale=3,3,3;v=true;t="<caster.name>"} @self ~onSpawn
+  - setname{name="&a||||||||||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>98%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||||||||||||||||&c|"} @self ~onDamaged ?healthpercent{p=>96%} ?healthpercent{p=<98%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||||||||||||||||&c||"} @self ~onDamaged ?healthpercent{p=>94%} ?healthpercent{p=<96%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||||||||||||||&c|||"} @self ~onDamaged ?healthpercent{p=>92%} ?healthpercent{p=<94%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||||||||||||||&c||||"} @self ~onDamaged ?healthpercent{p=>90%} ?healthpercent{p=<92%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||||||||||||&c|||||"} @self ~onDamaged ?healthpercent{p=>88%} ?healthpercent{p=<90%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||||||||||||&c||||||"} @self ~onDamaged ?healthpercent{p=>86%} ?healthpercent{p=<88%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||||||||||&c|||||||"} @self ~onDamaged ?healthpercent{p=>84%} ?healthpercent{p=<86%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||||||||||&c||||||||"} @self ~onDamaged ?healthpercent{p=>82%} ?healthpercent{p=<84%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||||||||&c|||||||||"} @self ~onDamaged ?healthpercent{p=>80%} ?healthpercent{p=<82%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||||||||&c||||||||||"} @self ~onDamaged ?healthpercent{p=>78%} ?healthpercent{p=<80%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||||||&c|||||||||||"} @self ~onDamaged ?healthpercent{p=>76%} ?healthpercent{p=<78%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||||||&c||||||||||||"} @self ~onDamaged ?healthpercent{p=>74%} ?healthpercent{p=<76%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||||&c|||||||||||||"} @self ~onDamaged ?healthpercent{p=>72%} ?healthpercent{p=<74%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||||&c||||||||||||||"} @self ~onDamaged ?healthpercent{p=>70%} ?healthpercent{p=<72%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||||&c|||||||||||||||"} @self ~onDamaged ?healthpercent{p=>68%} ?healthpercent{p=<70%}
+  - setname{name="&a||||||||||||||||||||||||||||||||||&c||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>66%} ?healthpercent{p=<68%}
+  - setname{name="&a|||||||||||||||||||||||||||||||||&c|||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>64%} ?healthpercent{p=<66%}
+  - setname{name="&a||||||||||||||||||||||||||||||||&c||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>62%} ?healthpercent{p=<64%}
+  - setname{name="&a|||||||||||||||||||||||||||||||&c|||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>60%} ?healthpercent{p=<62%}
+  - setname{name="&a||||||||||||||||||||||||||||||&c||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>58%} ?healthpercent{p=<60%}
+  - setname{name="&a||||||||||||||||||||||||||||&c||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>56%} ?healthpercent{p=<58%}
+  - setname{name="&a|||||||||||||||||||||||||||&c|||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>54%} ?healthpercent{p=<56%}
+  - setname{name="&a||||||||||||||||||||||||||&c||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>52%} ?healthpercent{p=<54%}
+  - setname{name="&a|||||||||||||||||||||||||&c|||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>50%} ?healthpercent{p=<52%}
+  - setname{name="&a||||||||||||||||||||||||&c||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>48%} ?healthpercent{p=<50%}
+  - setname{name="&a|||||||||||||||||||||||&c|||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>46%} ?healthpercent{p=<48%}
+  - setname{name="&a||||||||||||||||||||||&c||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>44%} ?healthpercent{p=<46%}
+  - setname{name="&a|||||||||||||||||||||&c|||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>42%} ?healthpercent{p=<44%}
+  - setname{name="&a||||||||||||||||||||&c||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>40%} ?healthpercent{p=<42%}
+  - setname{name="&a|||||||||||||||||||&c|||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>38%} ?healthpercent{p=<40%}
+  - setname{name="&a||||||||||||||||||&c||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>36%} ?healthpercent{p=<38%}
+  - setname{name="&a|||||||||||||||||&c|||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>34%} ?healthpercent{p=<36%}
+  - setname{name="&a||||||||||||||||&c||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>32%} ?healthpercent{p=<34%}
+  - setname{name="&a|||||||||||||||&c|||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>30%} ?healthpercent{p=<32%}
+  - setname{name="&a||||||||||||||&c||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>28%} ?healthpercent{p=<30%}
+  - setname{name="&a|||||||||||||&c|||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>26%} ?healthpercent{p=<28%}
+  - setname{name="&a||||||||||||&c||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>24%} ?healthpercent{p=<26%}
+  - setname{name="&a|||||||||||&c|||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>22%} ?healthpercent{p=<24%}
+  - setname{name="&a||||||||||&c||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>20%} ?healthpercent{p=<22%}
+  - setname{name="&a|||||||||&c|||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>18%} ?healthpercent{p=<20%}
+  - setname{name="&a||||||||&c||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>16%} ?healthpercent{p=<18%}
+  - setname{name="&a|||||||&c|||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>14%} ?healthpercent{p=<16%}
+  - setname{name="&a||||||&c||||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>12%} ?healthpercent{p=<14%}
+  - setname{name="&a|||||&c|||||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>10%} ?healthpercent{p=<12%}
+  - setname{name="&a||||&c||||||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>8%} ?healthpercent{p=<10%}
+  - setname{name="&a|||&c|||||||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>6%} ?healthpercent{p=<8%}
+  - setname{name="&a||&c||||||||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>4%} ?healthpercent{p=<6%}
+  - setname{name="&a|&c|||||||||||||||||||||||||||||||||||||||||||||||||"} @self ~onDamaged ?healthpercent{p=>2%} ?healthpercent{p=<4%}
+
+
+flightschool_turret_red:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#ff0000;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_red;type=STRING} @self ~onSpawn
+
+flightschool_turret_blue:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#00b7ff;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_blue;type=STRING} @self ~onSpawn
+
+flightschool_turret_dark_blue:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#0000ff;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_dark_blue;type=STRING} @self ~onSpawn
+
+flightschool_turret_dark_violet:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#8400ff;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_dark_violet;type=STRING} @self ~onSpawn
+
+flightschool_turret_green:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#88ff00;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_green;type=STRING} @self ~onSpawn
+
+flightschool_turret_orange:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#ff8800;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_orange;type=STRING} @self ~onSpawn
+
+flightschool_turret_violet:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#ff00b3;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_violet;type=STRING} @self ~onSpawn
+
+flightschool_turret_yellow:
+  Template: flightschool_turret_template
+  Skills:
+  - setvariable{var=caster.color;val=#ffff00;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_yellow;type=STRING} @self ~onSpawn

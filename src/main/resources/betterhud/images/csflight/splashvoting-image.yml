@@ -1,0 +1,9 @@
+csflight_splashvoting:
+  type: single
+  file: csflight/splashvoting.png
+csflight_orca:
+  type: single
+  file: csflight/icons/orcas.png
+csflight_supersoakersbg:
+  type: single
+  file: csflight/splashvoting_2.png

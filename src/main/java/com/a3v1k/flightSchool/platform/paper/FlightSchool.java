@@ -10,6 +10,7 @@ import com.a3v1k.flightSchool.platform.paper.game.PaperKillcamManager;
 import com.a3v1k.flightSchool.platform.paper.game.PaperLobbyManager;
 import com.a3v1k.flightSchool.platform.paper.integration.FlightSchoolGameAdapter;
 import com.a3v1k.flightSchool.platform.paper.integration.scheduler.PaperSchedulerAdapter;
+import com.a3v1k.flightSchool.platform.paper.resource.BundledResourceExporter;
 import com.a3v1k.flightSchool.platform.paper.listener.GameListener;
 import com.a3v1k.flightSchool.platform.paper.listener.PlayerListener;
 import com.a3v1k.flightSchool.platform.paper.listener.TeamListener;
@@ -60,6 +61,8 @@ public class FlightSchool extends JavaPlugin {
     public void onEnable() {
         instance = this;
         getLogger().info("FlightSchool is enabling...");
+
+        new BundledResourceExporter(this).exportAll();
 
         this.scheduler = new PaperSchedulerAdapter(this);
 

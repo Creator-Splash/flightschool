@@ -1,0 +1,237 @@
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_yellow:
+  Type: IRON_GOLEM
+  Display: plane_yellow
+  Faction: plane_yellow
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_yellow;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#fad428;type=STRING} @self ~onSpawn
+  - skill{s=plane_yellow_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_yellow_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_violet:
+  Type: IRON_GOLEM
+  Display: plane_violet
+  Faction: plane_violet
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_violet;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#d036d8;type=STRING} @self ~onSpawn
+  - skill{s=plane_violet_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_violet_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_red:
+  Type: IRON_GOLEM
+  Display: plane_red
+  Faction: plane_red
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_red;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#f6625e;type=STRING} @self ~onSpawn
+  - skill{s=plane_red_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_red_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_orange:
+  Type: IRON_GOLEM
+  Display: plane_orange
+  Faction: plane_orange
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_orange;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#e47719;type=STRING} @self ~onSpawn
+  - skill{s=plane_orange_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_orange_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_green:
+  Type: IRON_GOLEM
+  Display: plane_green
+  Faction: plane_green
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_green;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#59a28d;type=STRING} @self ~onSpawn
+  - skill{s=plane_green_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_green_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_dark_violet:
+  Type: IRON_GOLEM
+  Display: plane_dark_violet
+  Faction: plane_dark_violet
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_dark_violet;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#b428fc;type=STRING} @self ~onSpawn
+  - skill{s=plane_dark_violet_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_dark_violet_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_dark_blue:
+  Type: IRON_GOLEM
+  Display: plane_dark_blue
+  Faction: plane_dark_blue
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_dark_blue;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#4489ee;type=STRING} @self ~onSpawn
+  - skill{s=plane_dark_blue_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_dark_blue_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround
+
+
+############################################################################################
+############################################################################################
+############################################################################################
+
+plane_blue:
+  Type: IRON_GOLEM
+  Display: plane_blue
+  Faction: plane_blue
+  Health: 10
+  Options:
+    Silent: true
+    MovementSpeed: 1
+    Collidable: true
+    PreventOtherDrops: true
+    Despawn: false
+  AIGoalSelectors:
+  - clear
+  AITargetSelectors:
+  - clear
+  Skills:
+  - model{m=<caster.type.name>;drive=true;ride=true} @self ~onSpawn
+  - setvariable{var=caster.beam;val=beam_blue;type=STRING} @self ~onSpawn
+  - setvariable{var=caster.color;val=#2bcbe8;type=STRING} @self ~onSpawn
+  - skill{s=plane_blue_mount} @trigger ~onInteract ~onSignal:mountPlane
+  - skill{s=plane_run;cd=0.2} @self ~onInteract
+  - skill{s=plane_blue_particles} @self ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - skill{s=plane_movement} @modelpassengers{p=seat} ~onTimer:1 ?hasTag{t=plane_drive_on}
+  - lockmodel{l=false} @self ~onTimer:5 ?onGround

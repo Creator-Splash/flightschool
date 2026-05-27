@@ -1,0 +1,213 @@
+csflight_splashvoting:
+  texts:
+    2:
+      name: csflight_default
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -48
+      y: -25
+      pattern: "Game Scores"
+      align: center
+    3:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: -15
+      pattern: "I. [papi:flightschool_scores_name_1]"
+      align: left
+      space: 0
+    4:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: -8
+      pattern: "2. [papi:flightschool_scores_name_2]"
+      align: left
+      space: 0
+    5:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: -1
+      pattern: "3. [papi:flightschool_scores_name_3]"
+      align: left
+      space: 0
+    6:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: 6
+      pattern: "4. [papi:flightschool_scores_name_4]"
+      align: left
+      space: 0
+    7:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: 13
+      pattern: "5. [papi:flightschool_scores_name_5]"
+      align: left
+      space: 0
+    8:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: 20
+      pattern: "6. [papi:flightschool_scores_name_6]"
+      align: left
+      space: 0
+    9:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: 27
+      pattern: "7. [papi:flightschool_scores_name_7]"
+      align: left
+      space: 0
+    10:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -101
+      y: 34
+      pattern: "8. [papi:flightschool_scores_name_8]"
+      align: left
+      space: 0
+    11:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: -15
+      pattern: "[papi:flightschool_scores_value_1]"
+      align: right
+      space: 0
+    12:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: -8
+      pattern: "[papi:flightschool_scores_value_2]"
+      align: right
+      space: 0
+    13:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: -1
+      pattern: "[papi:flightschool_scores_value_3]"
+      align: right
+      space: 0
+    14:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: 6
+      pattern: "[papi:flightschool_scores_value_4]"
+      align: right
+      space: 0
+    15:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: 13
+      pattern: "[papi:flightschool_scores_value_5]"
+      align: right
+      space: 0
+    16:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: 20
+      pattern: "[papi:flightschool_scores_value_6]"
+      align: right
+      space: 0
+    17:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: 27
+      pattern: "[papi:flightschool_scores_value_7]"
+      align: right
+      space: 0
+    18:
+      name: csflight_upheavtt
+      number-format: "#,###"
+      outline: true
+      layer: 1
+      color: white
+      scale: 0.4
+      x: -8
+      y: 34
+      pattern: "[papi:flightschool_scores_value_8]"
+      align: right
+      space: 0
+csflight_blackbox:
+  images:
+    2:
+      name: csflight_splashvoting
+      x: -49
+      y: -40
+      scale: 0.8
+      opacity: 0.5

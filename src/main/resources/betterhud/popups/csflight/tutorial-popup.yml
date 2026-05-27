@@ -1,0 +1,18 @@
+csflight_elimination:
+  group: elimination
+  unique: false
+  layouts:
+    1:
+      name: csflight_eliminations
+      x: 100
+      y: 100
+  conditions:
+    1:
+      first: (string)papi:waterguns_last_kill
+      second: "'None'"
+      operation: "!="
+  move:
+    duration: 1
+    pixel:
+      x-equation: -floor((t - 1) / 8) * 40
+      y-equation: (((t - 1) % 8) + 1) * 40
