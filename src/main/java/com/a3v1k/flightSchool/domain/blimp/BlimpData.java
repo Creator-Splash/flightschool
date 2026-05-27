@@ -13,6 +13,8 @@ public class BlimpData {
     private final String teamName;
 
     private final List<List<Location>> segments;
+
+    /** Geometric centre of the blimp, used to anchor the floating health TextDisplay. */
     private final Location center;
 
     public BlimpData(String teamName, List<Location> solidBlocks) {
@@ -32,10 +34,10 @@ public class BlimpData {
         }
 
         this.center = new Location(
-                min.getWorld(),
-                (min.getX() + max.getX()) / 2.0,
-                (min.getY() + max.getY()) / 2.0,
-                (min.getZ() + max.getZ()) / 2.0
+            min.getWorld(),
+            (min.getX() + max.getX()) / 2.0,
+            (min.getY() + max.getY()) / 2.0,
+            (min.getZ() + max.getZ()) / 2.0
         );
 
         Vector axis = max.toVector().subtract(min.toVector()).normalize();

@@ -30,6 +30,36 @@ public class ConfigManager {
         }
     }
 
+    public int getMatchDuration() {
+        YamlConfiguration config = this.fileManager.getConfig();
+
+        if (!config.contains("match.duration-seconds")) {
+            config.set("match.duration-seconds", 600);
+            try {
+                this.fileManager.save(config);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return config.getInt("match.duration-seconds", 600);
+    }
+
+    public int getMinPlayers() {
+        YamlConfiguration config = this.fileManager.getConfig();
+
+        if (!config.contains("game.min-players")) {
+            config.set("game.min-players", 2);
+            try {
+                this.fileManager.save(config);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return config.getInt("game.min-players", 2);
+    }
+
     public void addCannonLocation(String teamName, Location location) {
         YamlConfiguration config = this.fileManager.getConfig();
 

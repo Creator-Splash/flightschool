@@ -36,23 +36,23 @@ public final class FlightSchoolGameAdapter implements GameAdapter {
     @Override
     public GameRequirements requirements() {
         int durationSeconds = Math.min(50 * 60,
-                Math.max(60, plugin.getConfig().getInt("game.duration-seconds", 600)));
+            Math.max(60, plugin.getConfig().getInt("game.duration-seconds", 600)));
         int warmupSeconds = Math.max(0, plugin.getConfig().getInt("event-mode.warmup-seconds", 5));
         int readinessSeconds = Math.max(0, plugin.getConfig().getInt("event-mode.readiness-timeout-seconds", 0));
         int postEndSeconds = Math.max(5, Math.min(30,
-                plugin.getConfig().getInt("event-mode.post-end-seconds", 5)));
+            plugin.getConfig().getInt("event-mode.post-end-seconds", 5)));
         return GameRequirements.builder()
-                .teamMode(TeamMode.TEAM_VS_TEAM)
-                .teamRange(2, 8)
-                .playersPerTeamRange(1, 5)
-                .declareEndCondition(EndCondition.lastTeamStanding())
-                .declareEndCondition(EndCondition.timeout(Duration.ofSeconds(durationSeconds)))
-                .evacuationPolicy(EvacuationPolicy.AUTO_TO_LOBBY)
-                .onEndContinuation(OnEndContinuation.PUBLISH_GAME_COMPLETE)
-                .readinessTimeout(Duration.ofSeconds(readinessSeconds))
-                .preGameWarmup(Duration.ofSeconds(warmupSeconds))
-                .postEndDisplay(Duration.ofSeconds(postEndSeconds))
-                .build();
+            .teamMode(TeamMode.TEAM_VS_TEAM)
+            .teamRange(2, 8)
+            .playersPerTeamRange(1, 5)
+            .declareEndCondition(EndCondition.lastTeamStanding())
+            .declareEndCondition(EndCondition.timeout(Duration.ofSeconds(durationSeconds)))
+            .evacuationPolicy(EvacuationPolicy.AUTO_TO_LOBBY)
+            .onEndContinuation(OnEndContinuation.PUBLISH_GAME_COMPLETE)
+            .readinessTimeout(Duration.ofSeconds(readinessSeconds))
+            .preGameWarmup(Duration.ofSeconds(warmupSeconds))
+            .postEndDisplay(Duration.ofSeconds(postEndSeconds))
+            .build();
     }
 
     @Override

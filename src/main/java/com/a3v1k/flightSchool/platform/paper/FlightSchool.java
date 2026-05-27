@@ -1,9 +1,16 @@
 package com.a3v1k.flightSchool.platform.paper;
 
-import com.a3v1k.flightSchool.platform.paper.command.FlightSchoolCommand;
-import com.a3v1k.flightSchool.platform.paper.command.TempCommands;
+import com.a3v1k.flightSchool.application.scheduler.Scheduler;
+import com.a3v1k.flightSchool.platform.paper.command.CommandRegistrar;
+import com.a3v1k.flightSchool.platform.paper.command.FsAdminCommands;
+import com.a3v1k.flightSchool.platform.paper.command.FsCommands;
 import com.a3v1k.flightSchool.application.game.*;
+import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
+import com.a3v1k.flightSchool.platform.paper.game.PaperKillcamManager;
+import com.a3v1k.flightSchool.platform.paper.game.PaperLobbyManager;
 import com.a3v1k.flightSchool.platform.paper.integration.FlightSchoolGameAdapter;
+import com.a3v1k.flightSchool.platform.paper.integration.scheduler.PaperSchedulerAdapter;
+import com.a3v1k.flightSchool.platform.paper.resource.BundledResourceExporter;
 import com.a3v1k.flightSchool.platform.paper.listener.GameListener;
 import com.a3v1k.flightSchool.platform.paper.listener.PlayerListener;
 import com.a3v1k.flightSchool.platform.paper.listener.TeamListener;
@@ -14,17 +21,19 @@ import com.a3v1k.flightSchool.application.team.TeamManager;
 import com.a3v1k.flightSchool.platform.paper.display.TeamVisualManager;
 import com.a3v1k.flightSchool.platform.paper.config.ConfigManager;
 import creatorsplash.creatorsplashcore.api.CreatorSplashCore;
-import com.destroystokyo.paper.Title;
 import lombok.Getter;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.title.Title;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
+import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 
@@ -33,29 +42,38 @@ public class FlightSchool extends JavaPlugin {
 
     private static final double LOCATOR_BAR_RANGE = 60_000_000.0D;
 
-    @Getter
-    private static FlightSchool instance;
+    @Getter private static FlightSchool instance;
 
-    private GameManager gameManager;
+    @Getter private Scheduler scheduler;
+    @Getter private GameManager gameManager;
+    @Getter private GameOrchestrator gameOrchestrator;
+
+    @Getter private CommandRegistrar commandRegistrar;
+
     private TeamManager teamManager;
     private TeamVisualManager teamVisualManager;
-    private LobbyManager lobbyManager;
+    private PaperLobbyManager lobbyManager;
     private ConfigManager configManager;
     private KillcamManager killcamManager;
-    private BukkitTask locatorBarTask;
+    private Scheduler.Task locatorBarTask;
+
     @Override
     public void onEnable() {
         instance = this;
         getLogger().info("FlightSchool is enabling...");
 
+        new BundledResourceExporter(this).exportAll();
+
+        this.scheduler = new PaperSchedulerAdapter(this);
+
         initializeManagers();
         startLocatorBarGuard();
+        initializeTeams();
 
-        this.initializeTeams();
-        this.getLogger().info("FlightSchool has been enabled.");
+        getLogger().info("FlightSchool has been enabled.");
 
-        this.enableCommands();
-        this.enableEvents();
+        enableCommands();
+        enableEvents();
 
         new RoleSelectExpansion(this).register();
         new PointsExpansion(this).register();
@@ -72,71 +90,87 @@ public class FlightSchool extends JavaPlugin {
 
         CreatorSplashCore.register(this, new FlightSchoolGameAdapter(this));
 
-        gameManager = new GameManager();
-        lobbyManager = new LobbyManager();
-        teamManager = new TeamManager();
-        teamVisualManager = new TeamVisualManager();
-        configManager = new ConfigManager();
-        killcamManager = new KillcamManager();
+        PaperGameManager paperGameManager = new PaperGameManager(this, scheduler);
+        this.gameManager = paperGameManager;
+        this.gameOrchestrator = paperGameManager;
+
+        this.lobbyManager = new PaperLobbyManager(this);
+        this.teamManager = new TeamManager();
+        this.teamVisualManager = new TeamVisualManager();
+        this.configManager = new ConfigManager();
+        this.killcamManager = new PaperKillcamManager(this, this.scheduler);
     }
 
+    // TODO
     private void initializeTeams() {
-        this.gameManager.addTeam(new Team("a", "red", Color.RED, "red_spawn"));
-        this.gameManager.addTeam(new Team("b", "yellow", Color.YELLOW, "yellow_spawn"));
-        this.gameManager.addTeam(new Team("c", "green", Color.GREEN, "green_spawn"));
-        this.gameManager.addTeam(new Team("d", "blue", Color.TEAL, "blue_spawn"));
-        this.gameManager.addTeam(new Team("e", "dark_violet", Color.FUCHSIA, "darkviolet_spawn"));
-        this.gameManager.addTeam(new Team("f", "violet", Color.PURPLE, "violet_spawn"));
-        this.gameManager.addTeam(new Team("g", "dark_blue", Color.BLUE, "darkblue_spawn"));
-        this.gameManager.addTeam(new Team("h", "orange", Color.ORANGE, "orange_spawn"));
+        this.gameManager.addTeam(new Team("Orca", "red", Color.RED, "red_spawn"));
+        this.gameManager.addTeam(new Team("Seahorse", "yellow", Color.YELLOW, "yellow_spawn"));
+        this.gameManager.addTeam(new Team("Turtle", "green", Color.GREEN, "green_spawn"));
+        this.gameManager.addTeam(new Team("Dolphin", "blue", Color.TEAL, "blue_spawn"));
+        this.gameManager.addTeam(new Team("Stingray", "dark_violet", Color.FUCHSIA, "darkviolet_spawn"));
+        this.gameManager.addTeam(new Team("Jellyfish", "violet", Color.PURPLE, "violet_spawn"));
+        this.gameManager.addTeam(new Team("Swordfish", "dark_blue", Color.BLUE, "darkblue_spawn"));
+        this.gameManager.addTeam(new Team("Octopus", "orange", Color.ORANGE, "orange_spawn"));
 
-        this.getLogger().info("Teams initialized.");
+        getLogger().info("Teams initialized.");
     }
 
     public void startGame() {
-        this.getLogger().info("FlightSchool game is starting!");
+        getLogger().info("FlightSchool game is starting!");
         enableLocatorBar();
-        this.lobbyManager.startCinematic(new ArrayList<>(this.getServer().getOnlinePlayers()));
+        this.lobbyManager.startCinematic(
+            this.getServer().getOnlinePlayers().stream()
+                .map(Player::getUniqueId)
+                .toList()
+        );
     }
 
     public void stopGame() {
-        this.getLogger().info("FlightSchool game has stopped.");
+        getLogger().info("FlightSchool game has stopped.");
         enableLocatorBar();
-        Title title = Title.builder()
-                .fadeIn(5)
-                .stay(40)
-                .fadeOut(20)
-                .title("Game Stopped")
-                .subtitle("Returning to lobby")
-                .build();
 
-        this.gameManager.resetRoundState();
+        this.gameOrchestrator.resetRoundState();
+
+        Component title = Component.text("Game Stopped", NamedTextColor.RED);
+        Component subtitle = Component.text("Returning to lobby", NamedTextColor.GRAY);
+        Title adventureTitle = Title.title(
+            title,
+            subtitle,
+            Title.Times.times(
+                Duration.ofMillis(250),
+                Duration.ofSeconds(2),
+                Duration.ofMillis(1000)
+            )
+        );
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             resetPlayerToLobby(player, false);
-            player.sendTitle(title);
+            player.showTitle(adventureTitle);
         }
     }
 
     public void endGame(Map<UUID, Integer> scores, String winner) {
-        this.getLogger().info("FlightSchool game has ended. Winner: " + winner);
+        getLogger().info("FlightSchool game has ended. Winner: " + winner);
     }
 
     @Override
     public void onDisable() {
         stopLocatorBarGuard();
 
-        if (this.gameManager != null) {
-            this.gameManager.resetRoundState();
+        if (this.gameOrchestrator != null) {
+            this.gameOrchestrator.resetRoundState();
         }
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             resetPlayerToLobby(player, true);
         }
 
-        this.getLogger().info("FlightSchool has been disabled.");
-        instance = null;
+        if (this.scheduler != null) {
+            this.scheduler.onDisable();
+        }
 
+        getLogger().info("FlightSchool has been disabled.");
+        instance = null;
     }
 
     public Location getLobbySpawnLocation() {
@@ -145,10 +179,10 @@ public class FlightSchool extends JavaPlugin {
         }
 
         World world = getConfigManager().getCannonLocations().values().stream()
-                .findFirst()
-                .filter(locations -> locations != null && !locations.isEmpty())
-                .map(locations -> locations.getFirst().getWorld())
-                .orElse(Bukkit.getWorlds().getFirst());
+            .findFirst()
+            .filter(locations -> !locations.isEmpty())
+            .map(locations -> locations.getFirst().getWorld())
+            .orElse(Bukkit.getWorlds().getFirst());
         return world.getSpawnLocation();
     }
 
@@ -172,27 +206,30 @@ public class FlightSchool extends JavaPlugin {
     }
 
     public void enableCommands() {
-        this.getCommand("fsh").setExecutor(new FlightSchoolCommand(this));
-        this.getCommand("fsh-test").setExecutor(new TempCommands(this));
+        try {
+            this.commandRegistrar = new CommandRegistrar(this);
+            this.commandRegistrar.registerAnnotated(new FsCommands(this));
+            this.commandRegistrar.registerAnnotated(new FsAdminCommands(this));
+        } catch (Exception e) {
+            getLogger().severe("Failed to initialize command registrar: " + e.getMessage());
+            getServer().getPluginManager().disablePlugin(this);
+        }
     }
 
     public void enableEvents() {
         this.getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         this.getServer().getPluginManager().registerEvents(new GameListener(this), this);
         this.getServer().getPluginManager().registerEvents(new TeamListener(this), this);
-        this.getServer().getPluginManager().registerEvents(this.killcamManager, this);
+        this.getServer().getPluginManager().registerEvents((Listener) this.killcamManager, this);
     }
 
     private void startLocatorBarGuard() {
         stopLocatorBarGuard();
-        this.locatorBarTask = Bukkit.getScheduler().runTaskTimer(this, this::enableLocatorBar, 0L, 1L);
+        this.locatorBarTask = scheduler.runRepeating(this::enableLocatorBar, 0L, 1L);
     }
 
     private void stopLocatorBarGuard() {
-        if (this.locatorBarTask == null) {
-            return;
-        }
-
+        if (this.locatorBarTask == null) return;
         this.locatorBarTask.cancel();
         this.locatorBarTask = null;
     }

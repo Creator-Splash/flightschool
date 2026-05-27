@@ -35,7 +35,7 @@ public class RoleSelectExpansion extends PlaceholderExpansion {
     public String onPlaceholderRequest(Player player, @NotNull String params) {
         if (player == null) return "";
 
-        GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player);
+        GamePlayer gamePlayer = this.plugin.getGameManager().getGamePlayer(player.getUniqueId());
         if (gamePlayer == null) return "";
 
         Team team = gamePlayer.getTeam();

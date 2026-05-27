@@ -9,9 +9,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.entity.EntityDismountEvent;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDismountEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -19,8 +20,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.world.WorldLoadEvent;
-
-import java.util.UUID;
 
 public class PlayerListener implements Listener {
     private final FlightSchool plugin;
@@ -32,17 +31,17 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        plugin.getGameManager().addPlayer(player);
+        plugin.getGameManager().addPlayer(player.getUniqueId());
 
-        if(plugin.getGameManager().getGameState() != GameState.LOBBY) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
+        if (plugin.getGameManager().getGameState() != GameState.LOBBY) {
+            plugin.getScheduler().run(() -> {
                 plugin.enableLocatorBarForPlayer(player);
                 plugin.getTeamVisualManager().refreshAll();
             });
             return;
         }
 
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().run(() -> {
             plugin.resetPlayerToLobby(player, false);
             plugin.getTeamVisualManager().refreshAll();
         });
@@ -55,8 +54,20 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
-        plugin.getGameManager().removePlayer(event.getPlayer());
+        plugin.getGameManager().removePlayer(event.getPlayer().getUniqueId());
         Bukkit.getScheduler().runTask(plugin, () -> plugin.getTeamVisualManager().refreshAll());
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPlayerDamage(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player)) return;
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return;
+
+        EntityDamageEvent.DamageCause cause = event.getCause();
+        if (cause == EntityDamageEvent.DamageCause.VOID ||
+            cause == EntityDamageEvent.DamageCause.WORLD_BORDER) return;
+
+        event.setCancelled(true);
     }
 
     @EventHandler
@@ -66,12 +77,12 @@ public class PlayerListener implements Listener {
         if(event.getNewGameMode() != GameMode.SPECTATOR) return;
 
         Player player = event.getPlayer();
-        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player);
+        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
         if (gamePlayer == null || gamePlayer.getTeam() == null) return;
 
         Team team = gamePlayer.getTeam();
         for (Player teamMember : plugin.getServer().getOnlinePlayers()) {
-            GamePlayer teamMemberGamePlayer = plugin.getGameManager().getGamePlayer(teamMember);
+            GamePlayer teamMemberGamePlayer = plugin.getGameManager().getGamePlayer(teamMember.getUniqueId());
             if (teamMemberGamePlayer == null || teamMemberGamePlayer.getTeam() != team || teamMember == player) continue;
 
             player.setSpectatorTarget(teamMember);
@@ -79,6 +90,11 @@ public class PlayerListener implements Listener {
         }
     }
 
+    /* == Plane pilot sneak suppression (T3) ==
+     * GameListener.onVehicleExit cancels the actual dismount, but PlayerToggleSneakEvent
+     * fires independently — without this handler the pilot still triggers the sneak
+     * state/animation while mounted. Cancel sneak for active plane pilots only.
+     */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onPlanePilotSneak(PlayerToggleSneakEvent event) {
         if (!event.isSneaking()) return;
@@ -100,7 +116,7 @@ public class PlayerListener implements Listener {
         if (player.getGameMode() != GameMode.ADVENTURE) return false;
         if (!player.isInsideVehicle()) return false;
 
-        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player);
+        GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
         if (gamePlayer == null || gamePlayer.getRole() != Role.PLANE_PILOT) return false;
 
         return !gamePlayer.isEliminated() && !gamePlayer.isLastStand();
@@ -115,8 +131,8 @@ public class PlayerListener implements Listener {
         if (event.getTo().getWorld().getEntities().isEmpty()) return;
         if (!(event.getTo().getWorld().getEntities().getFirst() instanceof Player target)) return;
 
-        GamePlayer spectatorGamePlayer = plugin.getGameManager().getGamePlayer(spectator);
-        GamePlayer targetGamePlayer = plugin.getGameManager().getGamePlayer(target);
+        GamePlayer spectatorGamePlayer = plugin.getGameManager().getGamePlayer(spectator.getUniqueId());
+        GamePlayer targetGamePlayer = plugin.getGameManager().getGamePlayer(target.getUniqueId());
 
         if(spectatorGamePlayer == null || targetGamePlayer == null) return;
         if(spectatorGamePlayer.getTeam() == null || targetGamePlayer.getTeam() == null) return;

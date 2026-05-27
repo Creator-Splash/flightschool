@@ -1,0 +1,293 @@
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+plane_start:
+  Conditions:
+  - hasTag{t=plane_on} orelsecast plane_on
+  - hasTag{t=plane_on} castinstead plane_off
+plane_on:
+  Skills:
+  - lockmodel{l=false}
+  - tagadd{t=plane_on}
+  - tagadd{t=plane_pre_look}
+  - state{s=on}
+  - target @trigger
+  - cancelSkill ?!hasTag{t=plane_on}
+  - tagremove{t=plane_pre_look}
+  - tagadd{t=plane_drive_on}
+plane_off:
+  Skills:
+  - lockmodel{l=true}
+  - tagremove{t=plane_on}
+  - tagremove{t=plane_pre_look}
+  - state{s=on;r=true}
+  - tagremove{t=plane_drive_on}
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+plane_yellow_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_yellow_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+plane_violet_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_violet_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+plane_red_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_red_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+plane_orange_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_orange_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+plane_green_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_green_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+plane_dark_violet_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_dark_violet_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+plane_dark_blue_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_dark_blue_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+plane_blue_mount:
+  Skills:
+  - mountmodel{mid=<caster.type.name>;pbone=seat;driver=false;
+    mode=[
+      - skill{s=plane_on;cd=0.2} @self
+      - potion{t=INVISIBILITY;d=2;p=false;i=false}
+      - skill{s=plane_blue_shot} ?variableEquals{var=skill.meg:jump;value=1}
+    ]} @trigger ~onInteract
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+plane_run:
+  Conditions:
+  - hasTag{t=plane_drive_on}
+  Skills:
+  - potion{t=SPEED;l=4;d=10;p=false;i=false} @trigger
+  - aura{n=plane_run;d=10}
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+plane_movement:
+  TargetConditions:
+  - pitch{p=-89to89} orelsecast plane_lock
+  Skills:
+  - lockmodel{l=false} @self
+  - look{ho=false;i=true;f=true} @targetLoc{fo=-15;y=-1.3}
+  - lunge{o=true} @modelpart{p=look}
+  - lunge{o=true;v=1} @modelpart{p=look} ?hasAura{n=plane_run}
+
+plane_lock:
+  Skills:
+  - lockmodel{l=true} @self
+  - lunge{o=true} @modelpart{p=look}
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+plane_yellow_particles:
+  Skills:
+  - e:p{p=reddust;c=#fad428;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#fad428;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#fad428;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#fad428;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+plane_violet_particles:
+  Skills:
+  - e:p{p=reddust;c=#d036d8;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#d036d8;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#d036d8;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#d036d8;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+plane_red_particles:
+  Skills:
+  - e:p{p=reddust;c=#f6625e;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#f6625e;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#f6625e;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#f6625e;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+plane_orange_particles:
+  Skills:
+  - e:p{p=reddust;c=#e47719;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#e47719;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#e47719;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#e47719;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+plane_green_particles:
+  Skills:
+  - e:p{p=reddust;c=#59a28d;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#59a28d;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#59a28d;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#59a28d;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+plane_dark_violet_particles:
+  Skills:
+  - e:p{p=reddust;c=#b428fc;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#b428fc;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#b428fc;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#b428fc;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+plane_dark_blue_particles:
+  Skills:
+  - e:p{p=reddust;c=#4489ee;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#4489ee;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#4489ee;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#4489ee;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+plane_blue_particles:
+  Skills:
+  - e:p{p=reddust;c=#2bcbe8;a=2;spread=0.1} @modelpart{p=wing_left}
+  - e:p{p=reddust;c=#2bcbe8;a=2;spread=0.1} @modelpart{p=wing_right}
+  - e:p{p=reddust;c=#2bcbe8;a=15;spread=0.25} @modelpart{p=wing_left} ?hasAura{n=plane_run}
+  - e:p{p=reddust;c=#2bcbe8;a=15;spread=0.25} @modelpart{p=wing_right} ?hasAura{n=plane_run}
+
+###########################################################################################
+###########################################################################################
+###########################################################################################
+
+plane_yellow_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_yellow;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#fad428;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_yellow;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#fad428;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}
+plane_violet_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_violet;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#d036d8;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_violet;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#d036d8;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}
+plane_red_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_red;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#f6625e;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_red;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#f6625e;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}
+plane_orange_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_orange;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#e47719;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_orange;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#e47719;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}
+plane_green_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_green;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#59a28d;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_green;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#59a28d;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}
+plane_dark_violet_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_dark_violet;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#b428fc;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_dark_violet;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#b428fc;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}
+plane_dark_blue_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_dark_blue;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#4489ee;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_dark_blue;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#4489ee;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}
+plane_blue_shot:
+  Skills:
+  - s{s=entity.arrow.shoot;v=0.5;p=1.5;repeat=1;repeati=1} @trigger
+  - s{s=entity.firework_rocket.launch;v=0.3;p=1.5;repeat=1;repeati=1} @trigger
+  - p{
+    oS=[
+      - vfx{m=beam_blue;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#2bcbe8;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_right}} @modelpart{p=barrel_right2}
+  - p{
+    oS=[
+      - vfx{m=beam_blue;p=root;r=500}
+      - vfxrot{x=0}
+    ];oH=[- d{a=1;pi=true;pkb=true}];oT=[- e:p{p=reddust;c=#2bcbe8;a=2;spread=0.02;delay=2}];d=9999;syo=0;sfo=0;fo=true;mr=200;v=100;g=0.2;hnp=true;origin=@modelpart{p=barrel_left}} @modelpart{p=barrel_left2}

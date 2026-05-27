@@ -1,10 +1,10 @@
 package com.a3v1k.flightSchool.domain.team;
 
-import com.a3v1k.flightSchool.application.game.BlimpHealthManager;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.player.Role;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
@@ -17,6 +17,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Getter @Setter
+@RequiredArgsConstructor
 public class Team {
 
     private final String displayName;
@@ -28,15 +29,6 @@ public class Team {
     private int cannonCount = 2;
     private boolean blimpDestroyed = false;
     private int destroyedBlimps = 0;
-    @Getter @Setter
-    private BlimpHealthManager healthManager;
-
-    public Team(String displayName, String name, Color color, String spawnRegionName) {
-        this.displayName = displayName;
-        this.name = name;
-        this.color = color;
-        this.spawnRegionName = spawnRegionName;
-    }
 
     public boolean getBlimpDestroyed() {
         return this.blimpDestroyed;
@@ -49,31 +41,14 @@ public class Team {
         cannonCount--;
     }
 
-
-    public List<Player> getCannonMembers() {
-        return getMembers().stream().map(Bukkit::getPlayer)
-                .filter(player -> player != null
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getTeam() == this
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getRole() == Role.CANNON_OPERATOR)
-                .collect(Collectors.toList());
-    }
-
-    public List<Player> getPlaneMembers() {
-        return getMembers().stream().map(Bukkit::getPlayer)
-                .filter(player -> player != null
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getTeam() == this
-                        && FlightSchool.getInstance().getGameManager().getGamePlayer(player).getRole() == Role.PLANE_PILOT)
-                .collect(Collectors.toList());
-    }
-
-    public void addMember(Player player) {
-        if (!members.contains(player.getUniqueId())) {
-            members.add(player.getUniqueId());
+    public void addMember(UUID playerId) {
+        if (!members.contains(playerId)) {
+            members.add(playerId);
         }
     }
 
-    public void removeMember(Player player) {
-        members.remove(player.getUniqueId());
+    public void removeMember(UUID playerId) {
+        members.remove(playerId);
     }
 
     public void resetRoundState() {

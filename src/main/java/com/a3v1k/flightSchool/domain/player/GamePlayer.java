@@ -2,12 +2,12 @@ package com.a3v1k.flightSchool.domain.player;
 
 import com.a3v1k.flightSchool.domain.team.Team;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
+@RequiredArgsConstructor
 public class GamePlayer {
 
     @Getter
@@ -17,16 +17,8 @@ public class GamePlayer {
     @Getter @Setter
     private Role role;
     @Getter @Setter
-    private boolean lastStand = false;
-    @Getter @Setter
     private boolean eliminated = false;
-
-    public GamePlayer(Player player) {
-        this.uuid = player.getUniqueId();
-    }
-
-    public Player getBukkitPlayer() {
-        return Bukkit.getPlayer(uuid);
-    }
+    @Getter @Setter
+    private boolean lastStand = false;
 
 }

@@ -27,14 +27,14 @@ import java.util.UUID;
 public final class FlightSchoolRuntime extends GameRuntime {
 
     private static final Map<String, String> EVENT_TO_FS_TEAM = Map.of(
-            "orca", "red",
-            "seahorse", "yellow",
-            "turtle", "green",
-            "dolphin", "blue",
-            "swordfish", "dark_blue",
-            "stingray", "dark_violet",
-            "jellyfish", "violet",
-            "octopus", "orange");
+        "orca",      "red",
+        "seahorse",  "yellow",
+        "turtle",    "green",
+        "dolphin",   "blue",
+        "swordfish", "dark_blue",
+        "stingray",  "dark_violet",
+        "jellyfish", "violet",
+        "octopus",   "orange");
 
     private final FlightSchool plugin;
     private final FlightSchoolGameAdapter adapter;
@@ -58,8 +58,10 @@ public final class FlightSchoolRuntime extends GameRuntime {
         GameManager gm = plugin.getGameManager();
         if (gm.getGameState() != GameState.LOBBY) {
             plugin.getLogger().info("[FlightSchoolRuntime] State was "
-                    + gm.getGameState() + "; resetting before round start.");
-            try { gm.resetRoundState(); } catch (Throwable t) {
+                + gm.getGameState() + "; resetting before round start.");
+            try {
+                plugin.getGameOrchestrator().resetRoundState();
+            } catch (Throwable t) {
                 plugin.getLogger().warning("[FlightSchoolRuntime] resetRoundState threw: " + t.getMessage());
             }
         }
@@ -67,8 +69,8 @@ public final class FlightSchoolRuntime extends GameRuntime {
         session = services().sessions().create(0, null);
         seedTeamsFromContext(context());
         plugin.getLogger().info("[FlightSchoolRuntime] Round " + context().round() + "/"
-                + context().totalRounds() + " prepared with " + seededTeams.size()
-                + " team(s); waiting for first arrival before launching cinematic.");
+            + context().totalRounds() + " prepared with " + seededTeams.size()
+            + " team(s); waiting for first arrival before launching cinematic.");
     }
 
     @Override
@@ -76,10 +78,10 @@ public final class FlightSchoolRuntime extends GameRuntime {
         try {
             plugin.startGame();
             plugin.getLogger().info("[FlightSchoolRuntime] Game " + context().round()
-                    + "/" + context().totalRounds() + " launched (PRE_GAME -> PLAYING).");
+                + "/" + context().totalRounds() + " launched (PRE_GAME -> PLAYING).");
         } catch (Throwable ex) {
             String reason = ex.getClass().getSimpleName() + ": "
-                    + (ex.getMessage() == null ? "" : ex.getMessage());
+                + (ex.getMessage() == null ? "" : ex.getMessage());
             plugin.getLogger().warning("[FlightSchoolRuntime] startGame threw: " + reason);
             proxy().notifyGameStartFailed(context().eventId(), adapter.gameId(), reason);
             requestEnd(EndReason.INTERNAL_ERROR);
@@ -91,14 +93,14 @@ public final class FlightSchoolRuntime extends GameRuntime {
         Team fsTeam = resolveFsTeam(teamName);
         if (fsTeam == null) {
             plugin.getLogger().warning("[FlightSchoolRuntime] Player " + player.getName()
-                    + " arrived with no resolvable team (event team='" + teamName + "').");
+                + " arrived with no resolvable team (event team='" + teamName + "').");
             return;
         }
 
-        plugin.getGameManager().assignPlayerToTeam(player, fsTeam);
+        plugin.getGameManager().assignPlayerToTeam(player.getUniqueId(), fsTeam);
         if (session != null && teamName != null && !teamName.isBlank()) {
-            session.addPlayer(player.getUniqueId(), teamName.toLowerCase(),
-                    player.getName(), false);
+            session.addPlayer(player.getUniqueId(), teamName.toLowerCase(Locale.ROOT),
+                player.getName(), false);
         }
 
         TeamManager tm = plugin.getTeamManager();
@@ -106,7 +108,7 @@ public final class FlightSchoolRuntime extends GameRuntime {
 
         GameState state = plugin.getGameManager().getGameState();
         if (state == GameState.IN_GAME || state == GameState.CINEMATIC) {
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            plugin.getScheduler().run(() -> {
                 if (!player.isOnline()) return;
                 player.setGameMode(GameMode.SURVIVAL);
                 player.getInventory().clear();
@@ -123,8 +125,10 @@ public final class FlightSchoolRuntime extends GameRuntime {
     protected void onEnd(EndReason reason) {
         if (plugin.getGameManager().getGameState() != GameState.LOBBY) {
             plugin.getLogger().info("[FlightSchoolRuntime] CSC signalled game end (" + reason
-                    + "); stopping active game.");
-            try { plugin.stopGame(); } catch (Throwable t) {
+                + "); stopping active game.");
+            try {
+                plugin.stopGame();
+            } catch (Throwable t) {
                 plugin.getLogger().warning("[FlightSchoolRuntime] stopGame threw: " + t.getMessage());
             }
         }
@@ -157,15 +161,15 @@ public final class FlightSchoolRuntime extends GameRuntime {
             Team fsTeam = resolveFsTeam(entry.getKey());
             if (fsTeam == null) {
                 plugin.getLogger().warning("[FlightSchoolRuntime] No FS team mapping for event team '"
-                        + entry.getKey() + "'; skipping its " + entry.getValue().size() + " player(s).");
+                    + entry.getKey() + "'; skipping its " + entry.getValue().size() + " player(s).");
                 continue;
             }
             seededTeams.add(fsTeam);
             String side = entry.getKey().toLowerCase(Locale.ROOT);
             for (UUID id : entry.getValue()) {
-                Player p = Bukkit.getPlayer(id);
-                if (p != null) gm.assignPlayerToTeam(p, fsTeam);
+                gm.assignPlayerToTeam(id, fsTeam);
                 if (session != null) {
+                    Player p = Bukkit.getPlayer(id);
                     session.addPlayer(id, side, p == null ? null : p.getName(), false);
                 }
             }

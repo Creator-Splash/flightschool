@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,7 @@ public class GameRuntime {
     private GameState gameState = GameState.LOBBY;
     private final Map<UUID, GamePlayer> players = new HashMap<>();
     private final Map<String, Team> teams = new HashMap<>();
-    private final Map<Team, List<Player>> playerPlaneMaps = new HashMap<>();
+    private final Map<Team, List<Player>> playerPlaneMaps = new HashMap<>(); // todo maybe move away from full bukkit
     private final ScoreManager scoreManager = new ScoreManager();
     private final Map<String, BlimpData> blimps = new HashMap<>();
     @Setter
@@ -34,28 +35,51 @@ public class GameRuntime {
     @Setter
     private long gameStartedAt = -1L;
 
-    public void addPlayer(Player player) {
-        players.put(player.getUniqueId(), new GamePlayer(player));
+    public void addPlayer(UUID playerId) {
+        players.put(playerId, new GamePlayer(playerId));
     }
 
-    public void removePlayer(Player player) {
-        players.remove(player.getUniqueId());
+    public void removePlayer(UUID playerId) {
+        players.remove(playerId);
     }
 
-    public GamePlayer getGamePlayer(Player player) {
-        return player == null ? null : players.computeIfAbsent(player.getUniqueId(), k -> new GamePlayer(player));
+    /**
+     * Returns the {@link GamePlayer} for the given UUID, or {@code null} if no
+     * player has been registered. Use {@link #addPlayer(UUID)} to register a
+     * player on first access. Does NOT auto-create — see commit history for
+     * why: a fabricated player has {@code eliminated=false}, which masked
+     * elimination state when disconnected players were still listed in
+     * {@link com.a3v1k.flightSchool.domain.team.Team#getMembers()}.
+     */
+    public GamePlayer getGamePlayer(@Nullable UUID playerId) {
+        return playerId == null ? null : players.get(playerId);
     }
 
     public void addTeam(Team team) {
         teams.put(team.getName(), team);
     }
 
+    /**
+     * Resolves a Team by either its internal {@code name} field (canonical, used
+     * everywhere internally) or its {@code displayName} field (what user-facing
+     * suggesters and chat now show). The internal-name lookup is checked first; if
+     * no match, falls back to a case-insensitive scan over displayNames. Names are
+     * unique by construction so the scan is unambiguous.
+     */
     public Team getTeam(String name) {
-        return teams.get(name);
+        if (name == null) return null;
+        Team direct = teams.get(name);
+        if (direct != null) return direct;
+        for (Team t : teams.values()) {
+            if (t.getDisplayName() != null && t.getDisplayName().equalsIgnoreCase(name)) {
+                return t;
+            }
+        }
+        return null;
     }
 
-    public void assignRole(Player player, Role role) {
-        GamePlayer gamePlayer = getGamePlayer(player);
+    public void assignRole(UUID playerId, Role role) {
+        GamePlayer gamePlayer = getGamePlayer(playerId);
         if (gamePlayer != null) {
             gamePlayer.setRole(role);
         }
@@ -75,8 +99,8 @@ public class GameRuntime {
 
     public long getRoleCount(Team team, Role role) {
         return players.values().stream()
-                .filter(player -> player.getTeam() == team && player.getRole() == role)
-                .count();
+            .filter(player -> player.getTeam() == team && player.getRole() == role)
+            .count();
     }
 
 }
