@@ -19,6 +19,12 @@ public final class PaperSchedulerAdapter implements Scheduler {
 
     private final ExecutorService asyncExecutor = Executors.newCachedThreadPool();
 
+    private volatile boolean paused;
+
+    public void setPaused(boolean paused) {
+        this.paused = paused;
+    }
+
     private BukkitScheduler scheduler() {
         return plugin.getServer().getScheduler();
     }
@@ -64,7 +70,10 @@ public final class PaperSchedulerAdapter implements Scheduler {
 
     @Override
     public Task runRepeating(Runnable task, long delayTicks, long periodTicks) {
-        BukkitTask bukkitTask = scheduler().runTaskTimer(plugin, task, delayTicks, periodTicks);
+        BukkitTask bukkitTask = scheduler().runTaskTimer(plugin, () -> {
+            if (paused) return;
+            task.run();
+        }, delayTicks, periodTicks);
         return bukkitTask::cancel;
     }
 
@@ -73,6 +82,7 @@ public final class PaperSchedulerAdapter implements Scheduler {
         MutableTickingTask tickingTask = new MutableTickingTask();
 
         BukkitTask bukkitTask = scheduler().runTaskTimer(plugin, () -> {
+            if (paused) return;
             task.accept(tickingTask);
             tickingTask.increment();
         }, delayTicks, periodTicks);
@@ -86,6 +96,7 @@ public final class PaperSchedulerAdapter implements Scheduler {
         MutableTickingTask tickingTask = new MutableTickingTask();
 
         BukkitTask bukkitTask = scheduler().runTaskTimer(plugin, () -> {
+            if (paused) return;
             task.accept(tickingTask);
             tickingTask.increment();
             if (tickingTask.elapsedTicks() >= maxTicks) {
@@ -99,7 +110,10 @@ public final class PaperSchedulerAdapter implements Scheduler {
 
     @Override
     public Task runRepeatingAsync(Runnable task, long delayTicks, long periodTicks) {
-        BukkitTask bukkitTask = scheduler().runTaskTimerAsynchronously(plugin, task, delayTicks, periodTicks);
+        BukkitTask bukkitTask = scheduler().runTaskTimerAsynchronously(plugin, () -> {
+            if (paused) return;
+            task.run();
+        }, delayTicks, periodTicks);
         return bukkitTask::cancel;
     }
 

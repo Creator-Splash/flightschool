@@ -5,6 +5,7 @@ import com.a3v1k.flightSchool.application.team.TeamManager;
 import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.FlightSchool;
+import com.a3v1k.flightSchool.platform.paper.integration.scheduler.PaperSchedulerAdapter;
 import creatorsplash.creatorsplashcore.api.runtime.GameRuntime;
 import creatorsplash.creatorsplashcore.api.runtime.RuntimeServices;
 import creatorsplash.creatorsplashcore.api.scoring.EndReason;
@@ -107,7 +108,7 @@ public final class FlightSchoolRuntime extends GameRuntime {
         if (tm != null) tm.teleportPlayerToSpawn(player, fsTeam);
 
         GameState state = plugin.getGameManager().getGameState();
-        if (state == GameState.IN_GAME || state == GameState.CINEMATIC) {
+        if (state == GameState.IN_GAME) {
             plugin.getScheduler().run(() -> {
                 if (!player.isOnline()) return;
                 player.setGameMode(GameMode.SURVIVAL);
@@ -118,6 +119,20 @@ public final class FlightSchoolRuntime extends GameRuntime {
                 player.setHealth(maxHp != null ? maxHp.getValue() : 20.0);
                 player.clearActivePotionEffects();
             });
+        }
+    }
+
+    @Override
+    protected void onFreeze() {
+        if (plugin.getScheduler() instanceof PaperSchedulerAdapter adapter) {
+            adapter.setPaused(true);
+        }
+    }
+
+    @Override
+    protected void onUnfreeze(long frozenMillis) {
+        if (plugin.getScheduler() instanceof PaperSchedulerAdapter adapter) {
+            adapter.setPaused(false);
         }
     }
 
