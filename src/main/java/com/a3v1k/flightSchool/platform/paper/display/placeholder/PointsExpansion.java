@@ -44,6 +44,12 @@ public class PointsExpansion extends PlaceholderExpansion {
         return "1.0.0";
     }
 
+    // Survive /papi reload; see RoleSelectExpansion.
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
         if (params.equalsIgnoreCase("timer")){

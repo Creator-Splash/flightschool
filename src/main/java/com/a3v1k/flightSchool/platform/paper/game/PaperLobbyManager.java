@@ -35,6 +35,17 @@ import java.util.UUID;
 public final class PaperLobbyManager implements LobbyManager {
 
     private final FlightSchool plugin;
+    private final List<Scheduler.Task> pendingLobbyTasks = new ArrayList<>();
+
+    @Override
+    public void cancelPendingLobbyTasks() {
+        for (Scheduler.Task task : pendingLobbyTasks) {
+            try {
+                task.cancel();
+            } catch (Throwable ignored) {}
+        }
+        pendingLobbyTasks.clear();
+    }
 
     @Override
     public void startRoleSelection(List<UUID> playerIds) {
@@ -45,7 +56,11 @@ public final class PaperLobbyManager implements LobbyManager {
         this.plugin.getLogger().info("Role selection has started.");
 
         assignTeams(players);
-        teleportTeamsToRegions(players);
+        try {
+            teleportTeamsToRegions(players);
+        } catch (Throwable t) {
+            this.plugin.getLogger().severe("[Lobby] teleportTeamsToRegions failed: " + t.getMessage());
+        }
 
         ItemStack itemStack = new ItemStack(Material.RECOVERY_COMPASS, 1);
         ItemMeta itemMeta = itemStack.getItemMeta();
@@ -82,10 +97,17 @@ public final class PaperLobbyManager implements LobbyManager {
         BossbarManager bossbarManager = new BossbarManager(20 * 20);
         Scheduler.Task bossbarTask = plugin.getScheduler()
             .runRepeating(bossbarManager::update, 0L, 1L);
+        pendingLobbyTasks.add(bossbarTask);
 
         plugin.getGameManager().setGameStartedAt(System.currentTimeMillis());
 
-        plugin.getScheduler().runRepeating(t -> {
+        Scheduler.Task countdownTask = plugin.getScheduler().runRepeating(t -> {
+            if (plugin.getGameManager().getGameState() != GameState.ROLE_SELECTION) {
+                t.cancel();
+                bossbarTask.cancel();
+                return;
+            }
+
             int onlineCount = Bukkit.getOnlinePlayers().size();
             int minPlayers = plugin.getConfigManager().getMinPlayers();
             if (onlineCount < minPlayers) {
@@ -113,6 +135,7 @@ public final class PaperLobbyManager implements LobbyManager {
                 plugin.getGameOrchestrator().startGame(activePlayers);
             }
         }, 0L, 1L);
+        pendingLobbyTasks.add(countdownTask);
     }
 
     private void cancelGameForInsufficientPlayers(int minPlayers) {
@@ -193,7 +216,12 @@ public final class PaperLobbyManager implements LobbyManager {
 
         // TODO: Switch it back to 40
         final int totalSeconds = 0;
-        plugin.getScheduler().runRepeating(t -> {
+        Scheduler.Task cinematicTask = plugin.getScheduler().runRepeating(t -> {
+            if (plugin.getGameManager().getGameState() != GameState.CINEMATIC) {
+                t.cancel();
+                return;
+            }
+
             int remaining = totalSeconds - t.elapsedTicks();
 
             if (remaining <= 0) {
@@ -224,6 +252,7 @@ public final class PaperLobbyManager implements LobbyManager {
                 }
             }
         }, 0L, 20L);
+        pendingLobbyTasks.add(cinematicTask);
     }
 
     private void assignRolesRandomly(List<Player> players) {

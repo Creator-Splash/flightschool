@@ -10,6 +10,7 @@ import creatorsplash.creatorsplashcore.api.runtime.GameRuntime;
 import creatorsplash.creatorsplashcore.api.runtime.RuntimeServices;
 import creatorsplash.creatorsplashcore.api.scoring.EndReason;
 import creatorsplash.creatorsplashcore.api.session.MatchSession;
+import creatorsplash.creatorsplashcore.bots.BotBehaviorProvider;
 import creatorsplash.creatorsplashcore.event.GameContext;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -52,6 +53,17 @@ public final class FlightSchoolRuntime extends GameRuntime {
     @Override
     protected boolean wantsPreGamePhase() {
         return true;
+    }
+
+    @Override
+    protected boolean supportsBots() {
+        return true;
+    }
+
+    @Override
+    protected BotBehaviorProvider botBehaviorProvider() {
+        return (bot, teamName, ctx) -> new FlightSchoolBotBehavior(plugin,
+                teamName == null ? null : EVENT_TO_FS_TEAM.get(teamName.toLowerCase(Locale.ROOT)));
     }
 
     @Override

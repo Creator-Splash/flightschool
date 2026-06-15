@@ -21,9 +21,7 @@ turret_shoot_red:
     
 Turret_Mount_Mechanic:
   Skills:
-  # Debug message to confirm click/signal works
-  - message{m="&a[Debug] Mounting..."} @trigger
-  
+  - sound{s=block.iron_trapdoor.open;v=0.8;p=1.2} @trigger
   - mountmodel{
       mid=turret;
       driver=true;

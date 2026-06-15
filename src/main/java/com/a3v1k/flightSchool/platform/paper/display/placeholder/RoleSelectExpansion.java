@@ -31,6 +31,13 @@ public class RoleSelectExpansion extends PlaceholderExpansion {
         return "1.0.0";
     }
 
+    // Survive /papi reload: non-persistent expansions get unregistered by the
+    // reload and the selection menu then renders raw %fsh_*% text until restart.
+    @Override
+    public boolean persist() {
+        return true;
+    }
+
     @Override
     public String onPlaceholderRequest(Player player, @NotNull String params) {
         if (player == null) return "";
@@ -49,6 +56,6 @@ public class RoleSelectExpansion extends PlaceholderExpansion {
             return String.valueOf(this.plugin.getGameManager().getRoleCount(team, Role.PLANE_PILOT));
         }
 
-        return null;
+        return "";
     }
 }

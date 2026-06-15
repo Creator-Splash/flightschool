@@ -129,6 +129,9 @@ public class FlightSchool extends JavaPlugin {
         getLogger().info("FlightSchool game has stopped.");
         enableLocatorBar();
 
+        if (this.lobbyManager != null) {
+            this.lobbyManager.cancelPendingLobbyTasks();
+        }
         this.gameOrchestrator.resetRoundState();
 
         Component title = Component.text("Game Stopped", NamedTextColor.RED);
