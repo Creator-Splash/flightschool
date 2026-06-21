@@ -64,6 +64,15 @@ public final class FsCommands implements CommandHandler {
             return;
         }
 
+        if (roleToAssign == Role.CANNON_OPERATOR
+            && plugin.getGameManager().getRoleCount(gamePlayer.getTeam(), Role.CANNON_OPERATOR)
+                >= gamePlayer.getTeam().getMembers().size() - 1) {
+            player.sendMessage(Component.text(
+                "Your team needs at least one plane pilot. You cannot all be cannons.",
+                NamedTextColor.RED));
+            return;
+        }
+
         if (!plugin.getGameManager().canAssignRole(gamePlayer.getTeam(), roleToAssign)) {
             player.sendMessage(Component.text(
                 "The " + roleToAssign.toString().replace('_', ' ')

@@ -265,11 +265,12 @@ public final class PaperLobbyManager implements LobbyManager {
             Team team = gamePlayer.getTeam();
             if (team == null) continue;
 
-            // Cannon-first: cannons are scarcer (2/team), so fill them before planes.
-            if (gm.canAssignRole(team, Role.CANNON_OPERATOR)) {
-                gm.assignRole(player.getUniqueId(), Role.CANNON_OPERATOR);
-            } else if (gm.canAssignRole(team, Role.PLANE_PILOT)) {
+            // Plane-first: a cannon-only team is stationary and cannot attack, so
+            // unassigned players default to pilots and every team keeps a plane.
+            if (gm.canAssignRole(team, Role.PLANE_PILOT)) {
                 gm.assignRole(player.getUniqueId(), Role.PLANE_PILOT);
+            } else if (gm.canAssignRole(team, Role.CANNON_OPERATOR)) {
+                gm.assignRole(player.getUniqueId(), Role.CANNON_OPERATOR);
             } else {
                 plugin.getLogger().warning("[Role Assignment] " + player.getName()
                     + " could not be assigned a role — team " + team.getName() + " is full.");

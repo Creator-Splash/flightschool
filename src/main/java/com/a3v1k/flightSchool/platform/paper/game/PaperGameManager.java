@@ -233,7 +233,16 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
 
     @Override
     public boolean canAssignRole(Team team, Role role) {
-        return getRoleCount(team, role) < getRoleLimit(role);
+        if (getRoleCount(team, role) >= getRoleLimit(role)) {
+            return false;
+        }
+        // A cannon-only team is stationary and can never attack, so every team must
+        // keep at least one plane: cap cannons at teamSize - 1 (forces a solo player
+        // onto a plane).
+        if (role == Role.CANNON_OPERATOR) {
+            return getRoleCount(team, Role.CANNON_OPERATOR) < team.getMembers().size() - 1;
+        }
+        return true;
     }
 
     /* == Game - Blimps == */
