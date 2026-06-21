@@ -68,6 +68,7 @@ public final class FlightSchoolRuntime extends GameRuntime {
 
     @Override
     protected void onStart() {
+        clearAdminPause();
         GameManager gm = plugin.getGameManager();
         if (gm.getGameState() != GameState.LOBBY) {
             plugin.getLogger().info("[FlightSchoolRuntime] State was "
@@ -143,13 +144,12 @@ public final class FlightSchoolRuntime extends GameRuntime {
 
     @Override
     protected void onUnfreeze(long frozenMillis) {
-        if (plugin.getScheduler() instanceof PaperSchedulerAdapter adapter) {
-            adapter.setPaused(false);
-        }
+        clearAdminPause();
     }
 
     @Override
     protected void onEnd(EndReason reason) {
+        clearAdminPause();
         if (plugin.getGameManager().getGameState() != GameState.LOBBY) {
             plugin.getLogger().info("[FlightSchoolRuntime] CSC signalled game end (" + reason
                 + "); stopping active game.");
@@ -158,6 +158,12 @@ public final class FlightSchoolRuntime extends GameRuntime {
             } catch (Throwable t) {
                 plugin.getLogger().warning("[FlightSchoolRuntime] stopGame threw: " + t.getMessage());
             }
+        }
+    }
+
+    private void clearAdminPause() {
+        if (plugin.getScheduler() instanceof PaperSchedulerAdapter adapter) {
+            adapter.setPaused(false);
         }
     }
 

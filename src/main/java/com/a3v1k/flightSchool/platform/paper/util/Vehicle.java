@@ -6,6 +6,7 @@ import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.team.Team;
 import com.a3v1k.flightSchool.platform.paper.game.PaperGameManager;
+import creatorsplash.creatorsplashcore.api.ProxyConnector;
 import io.lumine.mythic.bukkit.MythicBukkit;
 import io.lumine.mythic.core.mobs.ActiveMob;
 import lombok.experimental.UtilityClass;
@@ -31,6 +32,9 @@ public class Vehicle {
 
     private static final int RESPAWN_COUNTDOWN_SECONDS = 5;
 
+    private static final int POINTS_PLANE_KILL = 15;
+    private static final int POINTS_TURRET_KILL = 25;
+
     public void explodePlane(Entity entity, Entity damager) {
         if (entity == null) return;
 
@@ -51,7 +55,7 @@ public class Vehicle {
         if (team == null) return;
 
         if (isPlane(victim)) {
-            handlePlaneDeath(plugin, entity, victim, team, teamName);
+            handlePlaneDeath(plugin, entity, damager, team, teamName);
             return;
         }
 
@@ -62,7 +66,7 @@ public class Vehicle {
             Optional<ActiveMob> attackerOpt = mythic.getMobManager().getActiveMob(damager.getUniqueId());
             if (attackerOpt.isEmpty()) return;
 
-            handleTurretDeath(plugin, entity, victim, team, teamName);
+            handleTurretDeath(plugin, entity, damager, team, teamName);
         }
     }
 
@@ -71,19 +75,12 @@ public class Vehicle {
     private static void handlePlaneDeath(
         FlightSchool plugin,
         Entity entity,
-        ActiveMob victim,
+        Entity damager,
         Team team,
         String teamName
     ) {
         Player pilot = getOwnerPlayer(entity);
         if (pilot == null) return;
-
-        // Mark eliminated immediately so checkLastTeamStanding (called below) sees an
-        // accurate state. If the respawn is allowed, the runLater inside
-        // PaperGameManager.spawnDelayedPlane will reset eliminated=false before
-        // the plane is spawned again.
-        GamePlayer pilotGp = plugin.getGameManager().getGamePlayer(pilot.getUniqueId());
-        if (pilotGp != null) pilotGp.setEliminated(true);
 
         List<Location> planeLocations = plugin.getConfigManager().getPlaneLocations().get(teamName);
         if (planeLocations == null || planeLocations.isEmpty()) return;
@@ -92,15 +89,17 @@ public class Vehicle {
 
         spawnTeamFirework(entity, team);
 
+        awardKill(plugin, damager, team, POINTS_PLANE_KILL, "flightschool_plane");
+
         plugin.getKillcamManager().stopRecording(pilot);
         pilot.setGameMode(GameMode.SPECTATOR);
 
-        spawnRespawnRunnable(plugin, pilot, team, teamName, respawnLocation);
-
-        // Re-check after every plane death: if another team was already eliminated
-        // and this death (or its blocked respawn) leaves only one team with active
-        // players, the match should end. checkLastTeamStanding is idempotent.
-        plugin.getGameOrchestrator().checkLastTeamStanding();
+        // Elimination is owned by spawnDelayedPlane (its deny branches set
+        // eliminated=true + checkLastTeamStanding; its success path clears it).
+        // Marking eliminated or calling checkLastTeamStanding here would count a
+        // solo pilot as out and end the match during the respawn window.
+        plugin.getGameOrchestrator().spawnDelayedPlane(teamName, respawnLocation, pilot,
+            RESPAWN_COUNTDOWN_SECONDS);
     }
 
     private Location resolveRespawnLocation(
@@ -116,49 +115,19 @@ public class Vehicle {
         return planeLocations.get(respawnIndex).clone();
     }
 
-    /**
-     * @deprecated Dead code — never called. The respawn flow runs through
-     * {@code KillcamManager.onReplayFinished} → {@code GameOrchestrator.spawnDelayedPlane}.
-     * Slated for removal in a future cleanup pass.
-     */
-    @Deprecated
-    private void spawnRespawnRunnable(
-        FlightSchool plugin,
-        Player pilot,
-        Team team,
-        String teamName,
-        Location respawnLocation
-    ) {
-        // TODO: dead code, see deprecation notice
-    }
-
-    /**
-     * @deprecated Dead code — never called. The actual respawn-block logic lives in
-     * {@code PaperGameManager.spawnDelayedPlane}. Slated for removal in a future
-     * cleanup pass.
-     */
-    @Deprecated
-    private static void handleRespawnAttempt(
-        FlightSchool plugin,
-        Player pilot,
-        Team team,
-        String teamName,
-        Location respawnLocation
-    ) {
-        // TODO: dead code, see deprecation notice
-    }
-
     /* Turret Death */
 
     private static void handleTurretDeath(
         FlightSchool plugin,
         Entity entity,
-        ActiveMob victim,
+        Entity damager,
         Team team,
         String teamName
     ) {
         Player operator = getOwnerPlayer(entity);
         if (operator == null) return;
+
+        awardKill(plugin, damager, team, POINTS_TURRET_KILL, "flightschool_turret");
 
         operator.setGameMode(GameMode.SPECTATOR);
         operator.showTitle(Title.title(
@@ -321,6 +290,24 @@ public class Vehicle {
             .build());
         firework.setFireworkMeta(meta);
         firework.detonate();
+    }
+
+    private static void awardKill(FlightSchool plugin, Entity attackerEntity, Team victimTeam,
+            int points, String reason) {
+        if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return;
+        if (attackerEntity == null) return;
+
+        Player attacker = getOwnerPlayer(attackerEntity);
+        if (attacker == null) return;
+
+        GamePlayer attackerGp = plugin.getGameManager().getGamePlayer(attacker.getUniqueId());
+        if (attackerGp != null && attackerGp.getTeam() == victimTeam) return;
+
+        try {
+            ProxyConnector.getInstance().awardPoints(attacker, points, reason);
+        } catch (Throwable ignored) {
+        }
+        plugin.getScoreManager().addScore(attacker, points);
     }
 
 }

@@ -141,7 +141,13 @@ public class PointsExpansion extends PlaceholderExpansion {
     }
 
     private String getBoostHint(GamePlayer gamePlayer) {
+        if (this.plugin.getGameManager().getGameState() != GameState.IN_GAME) {
+            return "";
+        }
         if (!Role.PLANE_PILOT.equals(gamePlayer.getRole())) {
+            return "";
+        }
+        if (gamePlayer.isEliminated() || gamePlayer.isLastStand()) {
             return "";
         }
 
