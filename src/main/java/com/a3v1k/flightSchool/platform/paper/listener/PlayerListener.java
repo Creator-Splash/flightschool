@@ -5,6 +5,7 @@ import com.a3v1k.flightSchool.domain.match.GameState;
 import com.a3v1k.flightSchool.domain.player.GamePlayer;
 import com.a3v1k.flightSchool.domain.player.Role;
 import com.a3v1k.flightSchool.domain.team.Team;
+import com.ticxo.modelengine.api.events.ModelDismountEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
@@ -90,11 +91,19 @@ public class PlayerListener implements Listener {
         }
     }
 
-    /* == Plane pilot sneak suppression (T3) ==
-     * GameListener.onVehicleExit cancels the actual dismount, but PlayerToggleSneakEvent
-     * fires independently — without this handler the pilot still triggers the sneak
-     * state/animation while mounted. Cancel sneak for active plane pilots only.
-     */
+    // The pilot rides a ModelEngine seat bone, so sneaking dismounts via ModelEngine's
+    // own ModelDismountEvent (cancellable, aborts the dismount in MountManagerImpl), not
+    // the vanilla VehicleExit/EntityDismount events. ModelEngine reads the raw sneak input
+    // packet each tick, before PlayerToggleSneakEvent, so cancelling this event is the only
+    // hook that actually keeps the pilot mounted.
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
+    public void onPlaneModelDismount(ModelDismountEvent event) {
+        if (!(event.getPassenger() instanceof Player player)) return;
+        if (!shouldKeepPlanePilotMounted(player)) return;
+
+        event.setCancelled(true);
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = false)
     public void onPlanePilotSneak(PlayerToggleSneakEvent event) {
         if (!event.isSneaking()) return;
@@ -114,7 +123,6 @@ public class PlayerListener implements Listener {
     private boolean shouldKeepPlanePilotMounted(Player player) {
         if (plugin.getGameManager().getGameState() != GameState.IN_GAME) return false;
         if (player.getGameMode() != GameMode.ADVENTURE) return false;
-        if (!player.isInsideVehicle()) return false;
 
         GamePlayer gamePlayer = plugin.getGameManager().getGamePlayer(player.getUniqueId());
         if (gamePlayer == null || gamePlayer.getRole() != Role.PLANE_PILOT) return false;

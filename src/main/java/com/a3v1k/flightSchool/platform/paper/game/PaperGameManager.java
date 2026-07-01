@@ -24,6 +24,7 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.GameRule;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -325,6 +326,7 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
         }
 
         setupWorldBorder(world);
+        setupWorldEnvironment(world);
         startAirspaceManager(world, planeLocations);
         startPlaneCollisionManager();
 
@@ -630,6 +632,18 @@ public final class PaperGameManager implements GameManager, GameOrchestrator {
     private void setupWorldBorder(World world) {
         world.getWorldBorder().setCenter(world.getSpawnLocation());
         world.getWorldBorder().setSize(2048);
+    }
+
+    private static final long FIXED_WORLD_TIME_TICKS = 1000L;
+
+    private void setupWorldEnvironment(World world) {
+        world.setGameRule(GameRule.DO_WEATHER_CYCLE, Boolean.FALSE);
+        world.setGameRule(GameRule.DO_DAYLIGHT_CYCLE, Boolean.FALSE);
+        world.setStorm(false);
+        world.setThundering(false);
+        world.setWeatherDuration(0);
+        world.setClearWeatherDuration(Integer.MAX_VALUE);
+        world.setTime(FIXED_WORLD_TIME_TICKS);
     }
 
     private void startAirspaceManager(World world, Map<String, List<Location>> planeLocations) {
